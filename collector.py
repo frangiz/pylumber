@@ -3,6 +3,9 @@
 import requests
 import json
 from pathlib import Path
+from typing import Dict
+from bs4 import BeautifulSoup
+from requests_html import HTMLSession
 
 
 Path("dumps").mkdir(exist_ok=True)
@@ -14,14 +17,17 @@ with open("sources.txt", "r") as f:
 for url in urls:
     if url.startswith("#"):
         continue
-    cached_name = url.strip().split("/")[-1]
+    provider = url.split(".se")[0].split(".")[-1]
+    cached_name = provider +"-" +url.strip().split("/")[-1]
     if not Path("dumps", cached_name).exists():
         with open(Path("dumps", cached_name), "w") as f:
-            f.writelines(requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-).text)
+            session = HTMLSession()
+            resp = session.get(url.strip())
+            resp.html.render()
+            f.writelines(resp.html.html)
 
 
-def print_price(filename: str) -> None:
+def get_optimera_product(filename: str) -> Dict[str, str]:
     content = ""
     with open(Path("dumps", filename), "r") as f:
         content = "".join(f.readlines())
@@ -31,11 +37,34 @@ def print_price(filename: str) -> None:
         start = content.index(marker)
         end = content.index("}", start)
         product = json.loads(content[start + len(marker): end + 1].replace("'", "\""))
-        print(product)
+        return {
+            "name": product["name"],
+            "price": product["price"],
+            "variant": product["variant"]
+        }
     except ValueError as e:
         print(f"{e} for file {filename}")
         raise e
 
 
+def get_woody_product(filename: str) -> Dict[str, str]:
+    content = ""
+    with open(Path("dumps", filename), "r") as f:
+        content = "".join(f.readlines())
+    soup = BeautifulSoup(content, "html.parser")
+
+    product = {
+        "name": soup.title.text,
+        "price": 0.0,
+        "variant": ""
+    }
+    price = float(soup.find("div", class_="inner-price base-unit").findChild(class_="price").text.replace(" kr", "").replace(",", "."))
+    product["price"] = price
+
+    return product
+
 for file in Path("dumps").glob("*"):
-    print_price(file.name)
+    if file.name.startswith("optimera"):
+        print(get_optimera_product(file.name))
+    if file.name.startswith("woody"):
+        print(get_woody_product(file.name))
