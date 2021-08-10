@@ -25,4 +25,5 @@ venv.bak/
 .mypy_cache/
 
 dumps/
-sources.txt
+lumber_sources.json
+pylumber.db
