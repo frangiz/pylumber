@@ -2,7 +2,7 @@ from operator import attrgetter
 from flask import Blueprint, request, current_app, abort
 from flask.json import jsonify
 from app import db
-from app.models import PricedProduct
+from app.models import PricedProduct, PriceSnapshot, to_dict
 from itertools import groupby
 
 bp = Blueprint("api", __name__)
@@ -13,30 +13,45 @@ def create_priced_product():
         current_app.logger.warning(f"Got a call from remote addr {request.remote_addr}")
         abort(404)
     body = request.get_json()
-    pp = PricedProduct()
-    pp.date = body["date"]
-    pp.group_name = body["group_name"]
-    pp.source = body["source"]
-    pp.description = body["description"]
-    pp.url = body["url"]
-    pp.price = body["price"]
 
-    db.session.add(pp)
+    priced_product = PricedProduct.query.filter_by(group_name=body["group_name"], source=body["source"]).first()
+    if not priced_product:
+        pp = PricedProduct()
+        pp.group_name = body["group_name"]
+        pp.source = body["source"]
+        pp.description = body["description"]
+        pp.url = body["url"]
+
+        db.session.add(pp)
+        db.session.commit()
+
+        priced_product = pp
+    
+    if PriceSnapshot.query.filter_by(priced_product_id=priced_product.id, date=body["date"]).first():
+        current_app.logger.warning(f"Already got price snapshot {body}")
+        abort(400)
+    
+    ps = PriceSnapshot()
+    ps.priced_product_id = priced_product.id
+    ps.date = body["date"]
+    ps.price = body["price"]
+
+    db.session.add(ps)
     db.session.commit()
 
-    return jsonify(pp.to_dict()), 200
+    return jsonify({**priced_product.to_dict(), **ps.to_dict()}), 200
 
 
 @bp.route("/pricedproduct", methods=["GET"])
 def list_priced_products():
     entries = PricedProduct.query.all()
 
-    # crude sorting, should probably be improved
-    res = [{"name": k, "sources": list(g)} for k, g in groupby(entries, attrgetter('group_name'))]
-    for group in res:
-        group["sources"] = [{"source": k[0], "descr": k[1], "url": k[2], "prices": list(g)} for k, g in groupby(group["sources"], lambda e: (e.source, e.description, e.url))]
+    res = [{"group_name": k, "sources": [e.to_dict_except(["group_name"]) for e in g]} for k, g in groupby(entries, attrgetter("group_name"))]
+
     for group in res:
         for source in group["sources"]:
-            source["prices"] = [{"date": e.date, "price": e.price} for e in source["prices"]]
+            price_snapshots = PriceSnapshot.query.filter_by(priced_product_id=source["id"]).all()
+            source["prices"] = [ps.to_dict_except(["id", "priced_product_id"]) for ps in price_snapshots]
+            del source["id"]
 
     return jsonify(res), 200
