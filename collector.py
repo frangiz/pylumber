@@ -1,10 +1,12 @@
 # collects all prices and stores in db. Should be run nightly. 
 
+from datetime import datetime
 import json
 from pathlib import Path
 from typing import Dict
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
+import requests
 
 Path("dumps").mkdir(exist_ok=True)
 
@@ -46,7 +48,7 @@ def get_optimera_product(url: str) -> Dict[str, str]:
         product = json.loads(content[start + len(marker): end + 1].replace("'", "\""))
         return {
             "source": "optimera",
-            "name": product["name"],
+            "description": product["name"],
             "price": product["price"]
         }
     except ValueError as e:
@@ -60,7 +62,7 @@ def get_woody_product(url: str) -> Dict[str, str]:
 
     product = {
         "source": "woody",
-        "name": soup.title.text,
+        "description": soup.title.text,
         "price": 0.0
     }
     price = float(soup.find("div", class_="inner-price base-unit").findChild(class_="price").text.replace(" kr", "").replace(",", "."))
@@ -69,12 +71,16 @@ def get_woody_product(url: str) -> Dict[str, str]:
     return product
 
 
-for source in lumber_sources:
-    print(f"{source['name']}")
-    for url in source["urls"]:
+for group in lumber_sources:
+    print(f"{group['name']}")
+    for url in group["urls"]:
         product = {}
         if "optimera" in url:
             product = get_optimera_product(url)
         if "woody" in url:
             product = get_woody_product(url)
+        product["date"] = datetime.utcnow().date().isoformat()
+        product["group_name"] = group["name"]
+        product["url"] = url
         print(product)
+        requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
