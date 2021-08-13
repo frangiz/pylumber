@@ -1,8 +1,14 @@
 #!/bin/bash
 
-# Will not work if the terminal is closed. Need to find another way to start the application again.
-
 git pull
-curl http://localhost:5000/api/shutdown
-flask run &
-echo "Upgrade done"
+kill $(cat app.pid)
+while true; do
+    flask db upgrade
+    if [[ "$?" == "0" ]]; then
+        break
+    fi
+    echo "Deploy command failed, retrying in 5 secs..."
+    sleep 5
+done
+gunicorn -p app.pid -D -b :5000 pylumber:app
+echo "Upgrade done, app started again"
