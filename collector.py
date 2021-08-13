@@ -22,9 +22,9 @@ def get_url_content(url: str) -> str:
 
     # Check if the file is cached
     cached_name = provider +"-" +url.strip().split("/")[-1]
-    if Path("dumps", cached_name).exists():
-        with open(Path("dumps", cached_name), "r") as f:
-            return "".join(f.readlines())
+    #if Path("dumps", cached_name).exists():
+        #with open(Path("dumps", cached_name), "r") as f:
+            #return "".join(f.readlines())
 
     # File is not cached, load it from the internet
     session = HTMLSession()
