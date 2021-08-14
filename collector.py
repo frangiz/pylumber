@@ -8,10 +8,11 @@ from bs4 import BeautifulSoup
 from requests_html import HTMLSession
 import requests
 
-Path("dumps").mkdir(exist_ok=True)
+script_path = Path(__file__).parent.absolute()
+Path(script_path, "dumps").mkdir(exist_ok=True)
 
 lumber_sources = []
-with open("lumber_sources.json", "r") as f:
+with open(Path(script_path, "lumber_sources.json"), "r") as f:
     lumber_sources = json.load(f)
 
 
@@ -33,7 +34,7 @@ def get_url_content(url: str) -> str:
     resp.html.render()
 
     # Dump the result
-    with open(Path("dumps", cached_name), "w") as f:
+    with open(Path(script_path, "dumps", cached_name), "w") as f:
         f.writelines(resp.html.html)
 
     return resp.html.html
