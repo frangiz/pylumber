@@ -55,16 +55,3 @@ def list_priced_products():
             del source["id"]
 
     return jsonify(res), 200
-
-
-@bp.route("/shutdown", methods=["GET"])
-def shutdown():
-    if request.remote_addr not in ["127.0.0.1"]:
-        current_app.logger.warning(f"Got a call from remote addr {request.remote_addr}")
-        abort(404)
-
-    func = request.environ.get('werkzeug.server.shutdown')
-    if func is None:
-        raise RuntimeError('Not running with the Werkzeug Server')
-    func()
-    return "Shutting down..."
