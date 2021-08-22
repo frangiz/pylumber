@@ -1,5 +1,4 @@
 requests
-requests_html
 beautifulsoup4
 
 flask

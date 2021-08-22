@@ -5,9 +5,9 @@ import json
 from pathlib import Path
 from typing import Dict
 from bs4 import BeautifulSoup
-from requests_html import HTMLSession
 import requests
 import logging
+from urllib.parse import quote
 
 script_path = Path(__file__).parent.absolute()
 Path(script_path, "dumps").mkdir(exist_ok=True)
@@ -37,16 +37,13 @@ def get_url_content(url: str) -> str:
             #return "".join(f.readlines())
 
     # File is not cached, load it from the internet
-    session = HTMLSession()
-    resp = session.get(url.strip())
-    # Run the JavaScript on the page to get the correct price.
-    resp.html.render(wait=1, timeout=20)
+    resp = requests.get(url.strip())
 
     # Dump the result
     with open(Path(script_path, "dumps", cached_name), "w") as f:
-        f.writelines(resp.html.html)
+        f.writelines(resp.text)
 
-    return resp.html.html
+    return resp.text
 
 
 def get_optimera_product(url: str) -> Dict[str, str]:
@@ -75,8 +72,14 @@ def get_woody_product(url: str) -> Dict[str, str]:
         "description": soup.title.text,
         "price": 0.0
     }
-    price = float(soup.find("div", class_="inner-price base-unit").findChild(class_="price").text.replace(" kr", "").replace(",", "."))
-    product["price"] = price
+    id = id = soup.find("div", class_="inner-price base-unit").parent.get("data-partnersku")
+    headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
+    data = {"ProductId":[],"partnersku":[str(id).replace(" ", "+")]}
+    data = json.dumps(data).replace(" ", "")
+    data = "products="+quote(data).replace("%2B", "+")
+    api_url = "https://fellessonsbygghandel.woody.se/api/externalprice/priceinfos"
+    res = requests.post(api_url, data=data, headers=headers)
+    product["price"] = float(res.json()["partnerskus"][0]["Price"])
 
     return product
 
