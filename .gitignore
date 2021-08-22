@@ -28,3 +28,4 @@ dumps/
 lumber_sources.json
 pylumber.db
 app.pid
+*.log

@@ -7,9 +7,18 @@ from typing import Dict
 from bs4 import BeautifulSoup
 from requests_html import HTMLSession
 import requests
+import logging
 
 script_path = Path(__file__).parent.absolute()
 Path(script_path, "dumps").mkdir(exist_ok=True)
+
+logger = logging.getLogger("collector")
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s: %(message)s')
+fh = logging.FileHandler("collector.log", encoding="utf-8")
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
 lumber_sources = []
 with open(Path(script_path, "lumber_sources.json"), "r") as f:
@@ -31,7 +40,7 @@ def get_url_content(url: str) -> str:
     session = HTMLSession()
     resp = session.get(url.strip())
     # Run the JavaScript on the page to get the correct price.
-    resp.html.render(timeout=20)
+    resp.html.render(wait=1, timeout=20)
 
     # Dump the result
     with open(Path(script_path, "dumps", cached_name), "w") as f:
@@ -53,7 +62,7 @@ def get_optimera_product(url: str) -> Dict[str, str]:
             "price": product["price"]
         }
     except ValueError as e:
-        print(f"{e} for url {url}")
+        logger.warning(f"{e} for url {url}")
         raise e
 
 
@@ -85,8 +94,7 @@ for group in lumber_sources:
             product["group_name"] = group["name"]
             product["url"] = url
             print(product)
-            requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
-        except KeyboardInterrupt:
-            break
+            logger.debug(product)
+            resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
         except Exception as e:
-            print(f"Got exception {e} for url {url}")
+            logger.warning(f"Got exception {e} for url {url}")
