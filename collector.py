@@ -31,7 +31,7 @@ def get_url_content(url: str) -> str:
     session = HTMLSession()
     resp = session.get(url.strip())
     # Run the JavaScript on the page to get the correct price.
-    resp.html.render()
+    resp.html.render(timeout=20)
 
     # Dump the result
     with open(Path(script_path, "dumps", cached_name), "w") as f:
@@ -76,12 +76,15 @@ for group in lumber_sources:
     print(f"{group['name']}")
     for url in group["urls"]:
         product = {}
-        if "optimera" in url:
-            product = get_optimera_product(url)
-        if "woody" in url:
-            product = get_woody_product(url)
-        product["date"] = datetime.utcnow().date().isoformat()
-        product["group_name"] = group["name"]
-        product["url"] = url
-        print(product)
-        requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
+        try:
+            if "optimera" in url:
+                product = get_optimera_product(url)
+            if "woody" in url:
+                product = get_woody_product(url)
+            product["date"] = datetime.utcnow().date().isoformat()
+            product["group_name"] = group["name"]
+            product["url"] = url
+            print(product)
+            requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
+        except Exception as e:
+            print(f"Got exception {e} for url {url}")
