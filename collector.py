@@ -86,5 +86,7 @@ for group in lumber_sources:
             product["url"] = url
             print(product)
             requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
+        except KeyboardInterrupt:
+            break
         except Exception as e:
             print(f"Got exception {e} for url {url}")
