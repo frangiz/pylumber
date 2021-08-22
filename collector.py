@@ -14,7 +14,7 @@ Path(script_path, "dumps").mkdir(exist_ok=True)
 
 logger = logging.getLogger("collector")
 logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s: %(message)s')
+formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
 fh = logging.FileHandler("collector.log", encoding="utf-8")
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
