@@ -10,5 +10,6 @@ while true; do
     echo "Deploy command failed, retrying in 5 secs..."
     sleep 5
 done
+echo $(git rev-parse --short HEAD) > version.txt
 gunicorn -p app.pid -D -b :5000 pylumber:app
 echo "Upgrade done, app started again"

@@ -17,4 +17,6 @@ def index():
             source["prices"] = [ps.to_dict_except(["id", "priced_product_id"]) for ps in price_snapshots]
             del source["id"]
 
-    return render_template("main.html", groups=res)
+    with open("version.txt", "r") as f:
+        version = f.readline().strip()
+    return render_template("main.html", groups=res, version=version)
