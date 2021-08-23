@@ -32,6 +32,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
 <script>
+    var colorMapping = { 'optimera': 'rgb(0, 0, 0)', 'woody': 'rgb(0, 166, 81)', 'byggmax': 'rgb(255, 225, 50)'};
     {% for group in groups %}
         ctx{{loop.index}} = document.getElementById("chart_{{loop.index}}").getContext('2d');
         const myChart{{loop.index}} = new Chart(ctx{{loop.index}}, {
@@ -46,8 +47,7 @@
                     {% for source in group["sources"] %}
                         {
                             label: '{{ source["source"]}}',
-                            backgroundColor: 'rgba(161, 198, 247, 1)',
-                            borderColor: 'rgb(47, 128, 237)',
+                            backgroundColor: colorMapping['{{ source['source'] }}'],
                             data: [
                                 {% for price_snapshop in source["prices"] %}
                                     {{ price_snapshop["price"]}},
