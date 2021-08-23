@@ -1,0 +1,9 @@
+name: deploy new version
+on:
+  push:
+    branches: [ main ]
+jobs:
+  write-to-console:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Hello world!'
