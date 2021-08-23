@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname "$0")"
+
 git pull
 kill $(cat app.pid)
 while true; do
