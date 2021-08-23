@@ -25,6 +25,11 @@
         <h2 style="text-align: center;">{{ group["group_name"]}}</h2>
         <div class="card chart-container">
             <canvas id="chart_{{loop.index}}"></canvas>
+            <ul>
+                {% for source in group["sources"] %}
+                    <li><a href="{{ source["url"] }}" target="_blank">{{ source["source"] }} - {{ source["description"] }}</a></li>
+                {% endfor %}
+            </ul>
         </div>
     {% endfor %}
     <p style="text-align: center;">Version: {{ version }}</p>
