@@ -104,7 +104,7 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
         "price": price
     }
 
-total_sources = sum(sum(len(s) for s in group["sources"]) for group in lumber_sources)
+total_sources = sum(len(group["sources"]) for group in lumber_sources)
 processed_sources = 0
 for group in lumber_sources:
     for source in group["sources"]:
