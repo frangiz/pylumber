@@ -84,6 +84,25 @@ def get_woody_product(url: str) -> Dict[str, str]:
     return product
 
 
+def get_byggmax_product(url: str) -> Dict[str, str]:
+    content = get_url_content(url)
+    soup = BeautifulSoup(content, "html.parser")
+    title = soup.find(lambda tag: tag.name=="span" and tag.attrs.get("data-ui-id", "") == "page-title-wrapper").get_text()
+    base_tag = soup.find("div", class_="price-box price-final_price")
+
+    price_kr = int(base_tag.find("span", class_="integer").get_text())
+    decimal_text = base_tag.find("span", class_="decimal").get_text()
+    price_decimals = float(decimal_text if decimal_text.strip() != "" else "0")
+    display_unit = base_tag.find("span", class_="package-display-unit").get_text()
+
+    price = price_kr + price_decimals / 100.0
+
+    return {
+        "source": "byggmax",
+        "description": title,
+        "price": price
+    }
+
 for group in lumber_sources:
     print(f"{group['name']}")
     for url in group["urls"]:
@@ -93,6 +112,8 @@ for group in lumber_sources:
                 product = get_optimera_product(url)
             if "woody" in url:
                 product = get_woody_product(url)
+            if "byggmax" in url:
+                product = get_byggmax_product(url)
             product["date"] = datetime.utcnow().date().isoformat()
             product["group_name"] = group["name"]
             product["url"] = url

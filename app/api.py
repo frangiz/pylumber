@@ -1,9 +1,8 @@
-from operator import attrgetter
 from flask import Blueprint, request, current_app, abort
 from flask.json import jsonify
 from app import db
 from app.models import PricedProduct, PriceSnapshot
-from itertools import groupby
+from app.services import get_priced_products
 
 bp = Blueprint("api", __name__)
 
@@ -44,14 +43,4 @@ def create_priced_product():
 
 @bp.route("/pricedproduct", methods=["GET"])
 def list_priced_products():
-    entries = PricedProduct.query.all()
-
-    res = [{"group_name": k, "sources": [e.to_dict_except(["group_name"]) for e in g]} for k, g in groupby(entries, attrgetter("group_name"))]
-
-    for group in res:
-        for source in group["sources"]:
-            price_snapshots = PriceSnapshot.query.filter_by(priced_product_id=source["id"]).all()
-            source["prices"] = [ps.to_dict_except(["id", "priced_product_id"]) for ps in price_snapshots]
-            del source["id"]
-
-    return jsonify(res), 200
+    return jsonify(get_priced_products()), 200
