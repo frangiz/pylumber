@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import requests
 import logging
 from urllib.parse import quote
+import traceback
 
 script_path = Path(__file__).parent.absolute()
 Path(script_path, "dumps").mkdir(exist_ok=True)
@@ -56,7 +57,7 @@ def get_optimera_product(url: str) -> Dict[str, str]:
         return {
             "source": "optimera",
             "description": product["name"],
-            "price": product["price"]
+            "price": float(product["price"])
         }
     except ValueError as e:
         logger.warning(f"{e} for url {url}")
@@ -103,22 +104,29 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
         "price": price
     }
 
+total_sources = sum(sum(len(s) for s in group["sources"]) for group in lumber_sources)
+processed_sources = 0
 for group in lumber_sources:
-    print(f"{group['name']}")
-    for url in group["urls"]:
+    for source in group["sources"]:
         product = {}
         try:
+            url = source["url"]
+            alt_unit_factor = source.get("alt_unit_factor", 1.0)
             if "optimera" in url:
                 product = get_optimera_product(url)
             if "woody" in url:
                 product = get_woody_product(url)
             if "byggmax" in url:
                 product = get_byggmax_product(url)
+            product["price"] = product["price"] / alt_unit_factor
             product["date"] = datetime.utcnow().date().isoformat()
             product["group_name"] = group["name"]
             product["url"] = url
-            print(product)
             logger.debug(product)
             resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
         except Exception as e:
-            logger.warning(f"Got exception {e} for url {url}")
+            logger.exception(f"Got exception {e} for url {url}")
+            print(url)
+            traceback.print_exc()
+        processed_sources += 1
+        print(f"Processed {processed_sources}/{total_sources}")
