@@ -163,7 +163,7 @@ for group in lumber_sources:
             product["group_name"] = group["name"]
             product["url"] = url
             logger.debug(product)
-            #resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
+            resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
         except Exception as e:
             logger.exception(f"Got exception {e} for url {url}")
             print(url)
