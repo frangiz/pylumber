@@ -3,6 +3,7 @@
 cd "$(dirname "$0")"
 
 git pull
+pip install -r requirements.txt
 kill $(cat app.pid)
 while true; do
     flask db upgrade
