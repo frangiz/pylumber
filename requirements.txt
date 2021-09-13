@@ -4,5 +4,6 @@ beautifulsoup4
 flask
 flask-sqlalchemy
 flask-migrate
+Flask-Pydantic
 
 gunicorn
