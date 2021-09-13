@@ -3,12 +3,14 @@
 from datetime import datetime
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 from bs4 import BeautifulSoup
 import requests
 import logging
 from urllib.parse import quote
 import traceback
+import ssl
+import smtplib
 
 script_path = Path(__file__).parent.absolute()
 Path(script_path, "dumps").mkdir(exist_ok=True)
@@ -104,8 +106,46 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
         "price": price
     }
 
+
+def notify_result(failed_urls: List[str]) -> None:
+    is_monday = datetime.today().isoweekday() == 1
+    if is_monday or failed_urls:
+        smtp_config = {}
+        with open(Path(script_path, "collector_cnf.json"), "r") as f:
+            smtp_config = json.load(f)
+        context = ssl.create_default_context()
+        msg = create_email(is_monday, failed_urls)
+        with smtplib.SMTP_SSL(smtp_config["SMTP_HOST"], smtp_config["SMTP_PORT"], context=context) as server:
+            server.login(smtp_config["SMTP_SENDER_EMAIL"], smtp_config["SMTP_SENDER_PASSWORD"])
+            server.sendmail(smtp_config["SMTP_SENDER_EMAIL"], smtp_config["SMTP_RECIPIENTS"], msg)
+            server.quit()
+            logger.debug(f"Sent email: {msg}")
+
+
+def create_email(monday: bool, failed_urls: List[str]) -> str:
+    if monday and not failed_urls:
+        return """Subject: Monday - It still works test
+
+        It is Monday and I just want to make sure that I can send you status emails.
+
+        This message was generated {}
+        Yours sincerely,
+        pylumber
+        """.format(datetime.now())
+
+    return """Subject: One or more urls failed
+
+        I am sorry to inform you that one or more urls have failed to return data. Here is the list {}.
+
+        This message was generated {}
+        Yours sincerely,
+        pylumber
+        """.format(", ".join(failed_urls), datetime.now())
+
+
 total_sources = sum(len(group["sources"]) for group in lumber_sources)
 processed_sources = 0
+failed_urls = []
 for group in lumber_sources:
     for source in group["sources"]:
         product = {}
@@ -123,10 +163,13 @@ for group in lumber_sources:
             product["group_name"] = group["name"]
             product["url"] = url
             logger.debug(product)
-            resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
+            #resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
         except Exception as e:
             logger.exception(f"Got exception {e} for url {url}")
             print(url)
             traceback.print_exc()
+            failed_urls.append(url)
         processed_sources += 1
         print(f"Processed {processed_sources}/{total_sources}")
+
+notify_result(failed_urls)

@@ -30,3 +30,4 @@ pylumber.db
 app.pid
 *.log
 version.txt
+collector_cnf.json

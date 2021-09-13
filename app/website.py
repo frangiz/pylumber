@@ -7,4 +7,4 @@ bp = Blueprint("website", __name__)
 def index():
     with open("version.txt", "r") as f:
         version = f.readline().strip()
-    return render_template("main.html", groups=get_priced_products(), version=version)
+    return render_template("main.jinja2", groups=get_priced_products(), version=version)

@@ -14,7 +14,7 @@
 
 <style>
     .chart-container {
-        width: 50%;
+        width: 90%;
         height: 50%;
         margin: auto;
     }
@@ -22,9 +22,9 @@
 
 <body>
     {% for group in groups %}
-        <h2 style="text-align: center;">{{ group["group_name"]}}</h2>
+        <h2 style="text-align: center;">{{ group["group_name"] }}</h2>
         <div class="card chart-container">
-            <canvas id="chart_{{loop.index}}"></canvas>
+            <canvas id="chart_{{ loop.index }}"></canvas>
             <ul>
                 {% for source in group["sources"] %}
                     <li><a href="{{ source["url"] }}" target="_blank">{{ source["source"] }} - {{ source["description"] }}</a></li>
@@ -39,23 +39,23 @@
 <script>
     var colorMapping = { 'optimera': 'rgb(0, 0, 0)', 'woody': 'rgb(0, 166, 81)', 'byggmax': 'rgb(255, 225, 50)'};
     {% for group in groups %}
-        ctx{{loop.index}} = document.getElementById("chart_{{loop.index}}").getContext('2d');
-        const myChart{{loop.index}} = new Chart(ctx{{loop.index}}, {
+        ctx{{ loop.index }} = document.getElementById("chart_{{ loop.index }}").getContext('2d');
+        const myChart{{ loop.index }} = new Chart(ctx{{ loop.index }}, {
             type: 'line',
             data: {
                 labels: [
                     {% for price_snapshop in group["sources"][0]["prices"] %}
-                        "{{price_snapshop["date"]}}",
+                        "{{ price_snapshop["date"] }}",
                     {% endfor %}
                 ],
                 datasets: [
                     {% for source in group["sources"] %}
                         {
-                            label: '{{ source["source"]}}',
+                            label: '{{ source["source"] }}',
                             backgroundColor: colorMapping['{{ source['source'] }}'],
                             data: [
                                 {% for price_snapshop in source["prices"] %}
-                                    {{ price_snapshop["price"]}},
+                                    {{ price_snapshop["price"] }},
                                 {% endfor %}
                             ],
                             fill: false
