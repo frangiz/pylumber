@@ -28,6 +28,6 @@ dumps/
 lumber_sources.json
 pylumber.db
 app.pid
-*.log
+logs/
 version.txt
 collector_cnf.json

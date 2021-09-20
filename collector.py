@@ -14,11 +14,12 @@ import smtplib
 
 script_path = Path(__file__).parent.absolute()
 Path(script_path, "dumps").mkdir(exist_ok=True)
+Path(script_path, "logs").mkdir(exist_ok=True)
 
 logger = logging.getLogger("collector")
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
-fh = logging.FileHandler("collector.log", encoding="utf-8")
+fh = logging.FileHandler(Path(script_path, "logs", "collector.log"), encoding="utf-8")
 fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
