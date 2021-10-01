@@ -83,7 +83,7 @@ def get_woody_product(url: str) -> Dict[str, str]:
     data = "products="+quote(data).replace("%2B", "+")
     api_url = "https://fellessonsbygghandel.woody.se/api/externalprice/priceinfos"
     res = requests.post(api_url, data=data, headers=headers)
-    product["price"] = float(res.json()["partnerskus"][0]["Price"].replace(",", "."))
+    product["price"] = float(res.json()["partnerskus"][0]["Price"].replace(",", ".").replace("\xa00", ""))
 
     return product
 
