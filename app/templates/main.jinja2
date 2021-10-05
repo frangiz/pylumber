@@ -1,3 +1,5 @@
+{% import 'macros.jinja2' as macros %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,27 +25,8 @@
 <body>
     {% for group in groups %}
         <h2 style="text-align: center;">{{ group["group_name"] }}</h2>
+        {{ macros.price_table(price_tables_data[group["group_name"]]) }}
         <div class="row">
-            <div class="col-md-3"></div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body p-0">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Store</th>
-                                    <th>Date</th>
-                                    <th>Price</th>
-                                    <th>Price changed</th>
-                                </tr>
-                            </thead>
-                            <tbody id="price_table_{{ loop.index }}">
-                            </tbody>
-                        </table>
-                    </div> <!-- /.card-body -->
-                </div>
-            </div>
-            <div class="col-md-3"></div>
             <div class="card chart-container">
                 <canvas id="chart_{{ loop.index }}"></canvas>
                 <ul>
@@ -61,32 +44,6 @@
 <script>
     var colorMapping = { 'optimera': 'rgb(0, 0, 0)', 'woody': 'rgb(0, 166, 81)', 'byggmax': 'rgb(255, 225, 50)'};
     {% for group in groups %}
-        // Price table data
-        var priceTable = document.getElementById("price_table_{{ loop.index }}");
-        if ("{{ group["group_name"] }}" in {{ price_tables_data }}) {
-            var priceTableData = {{ price_tables_data }}["{{ group["group_name"] }}"];
-            for (index in priceTableData) {
-                console.log(priceTableData[index]);
-                var tableRow = document.createElement("tr");
-                var tdSource = document.createElement("td");
-                var tdDate = document.createElement("td");
-                var tdPrice = document.createElement("td");
-                var tdPriceChanged = document.createElement("td");
-
-                tdSource.textContent = priceTableData[index]["store"];
-                tdDate.textContent = priceTableData[index]["date"];
-                tdPrice.textContent = priceTableData[index]["price"];
-                tdPriceChanged.textContent = priceTableData[index]["price changed"];
-
-                tableRow.appendChild(tdSource);
-                tableRow.appendChild(tdDate);
-                tableRow.appendChild(tdPrice);
-                tableRow.appendChild(tdPriceChanged);
-
-                priceTable.appendChild(tableRow);
-            }
-        }
-
         // Draw the graphs
         ctx{{ loop.index }} = document.getElementById("chart_{{ loop.index }}").getContext('2d');
         const myChart{{ loop.index }} = new Chart(ctx{{ loop.index }}, {
