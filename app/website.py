@@ -41,7 +41,7 @@ def index():
             data = {
                 'store': source["source"],
                 'date': last_price_change["date"],
-                'price': last_price_change["price"],
+                'price': float_to_kr_str(last_price_change["price"])[1:],
                 'price_changed': last_price_change["change"]
             }
             price_tables_data[group["group_name"]].append(data)
