@@ -4,18 +4,27 @@ from flask import Blueprint, render_template
 bp = Blueprint("website", __name__)
 
 
+def float_to_kr_str(value: float) -> str:
+    sign = "+" if value > 0.0 else ""
+    return f"{sign}{value:.2f} kr"
+
+
 def get_last_price_change(prices):
-    last_price = prices[-1]["price"]
     price_change = {
         "date": prices[0]["date"],
         "price": prices[0]["price"],
-        "change": "---" # TODO: figure this one out
+        "change": "---"
     }
-    for price_snapshot in reversed(prices):
-        if last_price != price_snapshot["price"]:
+    if len(prices) == 1:
+        return price_change
+    for i in range(len(prices) - 1, 0, -1):
+        current_snapshot = prices[i]
+        prev_snapshot = prices[i - 1]
+        if current_snapshot["price"] != prev_snapshot["price"]:
+            price_change["date"] = current_snapshot["date"]
+            price_change["price"] = current_snapshot["price"]
+            price_change["change"] = float_to_kr_str(current_snapshot["price"] - prev_snapshot["price"])
             return price_change
-        price_change["date"] = price_snapshot["date"]
-        price_change["price"] = price_snapshot["price"]
     return price_change
 
 
@@ -33,7 +42,7 @@ def index():
                 'store': source["source"],
                 'date': last_price_change["date"],
                 'price': last_price_change["price"],
-                'price changed': last_price_change["change"]
+                'price_changed': last_price_change["change"]
             }
             price_tables_data[group["group_name"]].append(data)
     return render_template("main.jinja2", groups=all_prices, price_tables_data=price_tables_data, version=version)
