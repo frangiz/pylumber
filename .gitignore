@@ -31,3 +31,4 @@ app.pid
 logs/
 version.txt
 collector_cnf.json
+access_tokens.txt

@@ -28,6 +28,10 @@ lumber_sources = []
 with open(Path(script_path, "lumber_sources.json"), "r") as f:
     lumber_sources = json.load(f)
 
+access_token = None
+# Let us use the first token in the allow list.
+with open(Path(script_path, "access_tokens.txt"), 'r+') as f:
+    access_token = f.readline().strip()
 
 def get_url_content(url: str) -> str:
     if url.startswith("#"):
@@ -164,7 +168,7 @@ for group in lumber_sources:
             product["group_name"] = group["name"]
             product["url"] = url
             logger.debug(product)
-            resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product)
+            resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product, headers={"access_token": access_token})
         except Exception as e:
             logger.exception(f"Got exception {e} for url {url}")
             print(url)

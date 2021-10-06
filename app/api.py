@@ -6,6 +6,7 @@ from app.models import PricedProduct, PriceSnapshot
 from app.services import get_priced_products
 from pydantic import BaseModel, validator
 from flask_pydantic import validate
+from app.auth import token_required
 
 bp = Blueprint("api", __name__)
 
@@ -23,12 +24,9 @@ class PricedProductRequestModel(BaseModel):
         return value
 
 @bp.route("/pricedproduct", methods=["POST"])
+@token_required
 @validate()
 def create_priced_product(body: PricedProductRequestModel):
-    if request.remote_addr not in ["127.0.0.1"]:
-        current_app.logger.warning(f"Got a call from remote addr {request.remote_addr}")
-        abort(404)
-
     priced_product = PricedProduct.query.filter_by(group_name=body.group_name, source=body.source).first()
     if not priced_product:
         pp = PricedProduct()
