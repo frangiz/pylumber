@@ -39,7 +39,7 @@ def index():
         for source in group["sources"]:
             last_price_change = get_last_price_change(source["prices"])
             data = {
-                'store': source["source"],
+                'store': source["store"],
                 'date': last_price_change["date"],
                 'price': float_to_kr_str(last_price_change["price"])[1:],
                 'price_changed': last_price_change["change"]

@@ -62,7 +62,7 @@ def get_optimera_product(url: str) -> Dict[str, str]:
         end = content.index("}", start)
         product = json.loads(content[start + len(marker): end + 1].replace("'", "\""))
         return {
-            "source": "optimera",
+            "store": "optimera",
             "description": product["name"],
             "price": float(product["price"])
         }
@@ -76,7 +76,7 @@ def get_woody_product(url: str) -> Dict[str, str]:
     soup = BeautifulSoup(content, "html.parser")
 
     product = {
-        "source": "woody",
+        "store": "woody",
         "description": soup.title.text,
         "price": 0.0
     }
@@ -106,7 +106,7 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
     price = price_kr + price_decimals / 100.0
 
     return {
-        "source": "byggmax",
+        "store": "byggmax",
         "description": title,
         "price": price
     }

@@ -57,8 +57,8 @@
                 datasets: [
                     {% for source in group["sources"] %}
                         {
-                            label: '{{ source["source"] }}',
-                            backgroundColor: colorMapping['{{ source['source'] }}'],
+                            label: '{{ source["store"] }}',
+                            backgroundColor: colorMapping['{{ source['store'] }}'],
                             data: [
                                 {% for price_snapshop in source["prices"] %}
                                     {{ price_snapshop["price"] }},

@@ -11,7 +11,7 @@ from app.auth import token_required
 bp = Blueprint("api", __name__)
 
 class PricedProductRequestModel(BaseModel):
-    source: str
+    store: str
     description: str
     price: float
     date: str
@@ -23,15 +23,23 @@ class PricedProductRequestModel(BaseModel):
         datetime.strptime(value, "%Y-%m-%d")
         return value
 
+
+class Source(BaseModel):
+    group_name: str
+    source: str
+    url: str
+    alt_unit_factor: float
+
+
 @bp.route("/pricedproduct", methods=["POST"])
 @token_required
 @validate()
 def create_priced_product(body: PricedProductRequestModel):
-    priced_product = PricedProduct.query.filter_by(group_name=body.group_name, source=body.source).first()
+    priced_product = PricedProduct.query.filter_by(group_name=body.group_name, store=body.store).first()
     if not priced_product:
         pp = PricedProduct()
         pp.group_name = body.group_name
-        pp.source = body.source
+        pp.store = body.store
         pp.description = body.description
         pp.url = body.url
 
@@ -58,3 +66,10 @@ def create_priced_product(body: PricedProductRequestModel):
 @bp.route("/pricedproduct", methods=["GET"])
 def list_priced_products():
     return jsonify(get_priced_products()), 200
+
+
+@bp.route("sources", methods=["POST"])
+@token_required
+@validate
+def add_source(body: Source):
+    return jsonify({"msg": "soon to be implemented"}), 200

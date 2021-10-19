@@ -12,9 +12,10 @@ def to_dict_except(self, exclusions):
 class PricedProduct(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     group_name = db.Column(db.String(64), nullable=False)
-    source = db.Column(db.String(64), nullable=False)
+    store = db.Column(db.String(64), nullable=False)
     description = db.Column(db.String(128), nullable=False)
     url = db.Column(db.String(256), nullable=False)
+    alt_unit_factor = db.Column(db.Float, nullable=True)
 
 PricedProduct.to_dict = to_dict
 PricedProduct.to_dict_except = to_dict_except
