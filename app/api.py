@@ -2,21 +2,17 @@ from datetime import datetime
 from flask import Blueprint, request, current_app, abort
 from flask.json import jsonify
 from app import db
-from app.models import PricedProduct, PriceSnapshot
-from app.services import get_priced_products
+from app.models import Product, PriceSnapshot
+import app.services as services
 from pydantic import BaseModel, validator
 from flask_pydantic import validate
 from app.auth import token_required
 
 bp = Blueprint("api", __name__)
 
-class PricedProductRequestModel(BaseModel):
-    store: str
-    description: str
+class PriceCreateModel(BaseModel):
     price: float
     date: str
-    group_name: str
-    url: str
 
     @validator("date")
     def date_must_be_isoformat(cls, value):
@@ -31,45 +27,31 @@ class Source(BaseModel):
     alt_unit_factor: float
 
 
-@bp.route("/pricedproduct", methods=["POST"])
+@bp.route("/products/<int:id>/prices", methods=["POST"])
 @token_required
 @validate()
-def create_priced_product(body: PricedProductRequestModel):
-    priced_product = PricedProduct.query.filter_by(group_name=body.group_name, store=body.store).first()
-    if not priced_product:
-        pp = PricedProduct()
-        pp.group_name = body.group_name
-        pp.store = body.store
-        pp.description = body.description
-        pp.url = body.url
-
-        db.session.add(pp)
-        db.session.commit()
-
-        priced_product = pp
-    
-    if PriceSnapshot.query.filter_by(priced_product_id=priced_product.id, date=body.date).first():
+def create_priced_product(id, body: PriceCreateModel):
+    product = Product.query.filter_by(id=id).first()
+    if not product:
+        current_app.logger.warning(f"Could not find product with id {id} and add the body {body}")
+        abort(400)
+    if PriceSnapshot.query.filter_by(product_id=product.id, date=body.date).first():
         current_app.logger.warning(f"Already got price snapshot {body}")
         abort(400)
     
     ps = PriceSnapshot()
-    ps.priced_product_id = priced_product.id
+    ps.product_id = product.id
     ps.date = body.date
     ps.price = body.price
 
     db.session.add(ps)
     db.session.commit()
 
-    return jsonify({**priced_product.to_dict(), **ps.to_dict()}), 200
+    return jsonify({**product.to_dict(), **ps.to_dict()}), 200
 
 
-@bp.route("/pricedproduct", methods=["GET"])
-def list_priced_products():
-    return jsonify(get_priced_products()), 200
-
-
-@bp.route("sources", methods=["POST"])
-@token_required
-@validate
-def add_source(body: Source):
-    return jsonify({"msg": "soon to be implemented"}), 200
+@bp.route("/products", methods=["GET"])
+def get_products():
+    if request.args.get("prices", False):
+        return jsonify(services.get_products_with_prices()), 200
+    return jsonify(services.get_products()), 200
