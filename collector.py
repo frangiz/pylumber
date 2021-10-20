@@ -24,9 +24,11 @@ fh.setLevel(logging.DEBUG)
 fh.setFormatter(formatter)
 logger.addHandler(fh)
 
-lumber_sources = []
-with open(Path(script_path, "lumber_sources.json"), "r") as f:
-    lumber_sources = json.load(f)
+products = []
+resp = requests.get(url="http://localhost:5000/api/products")
+for group in resp.json():
+    for product in group["products"]:
+        products.append((product["id"], product["store"], product["url"]))
 
 access_token = None
 # Let us use the first token in the allow list.
@@ -61,11 +63,7 @@ def get_optimera_product(url: str) -> Dict[str, str]:
         start = content.index(marker)
         end = content.index("}", start)
         product = json.loads(content[start + len(marker): end + 1].replace("'", "\""))
-        return {
-            "store": "optimera",
-            "description": product["name"],
-            "price": float(product["price"])
-        }
+        return float(product["price"])
     except ValueError as e:
         logger.warning(f"{e} for url {url}")
         raise e
@@ -75,11 +73,6 @@ def get_woody_product(url: str) -> Dict[str, str]:
     content = get_url_content(url)
     soup = BeautifulSoup(content, "html.parser")
 
-    product = {
-        "store": "woody",
-        "description": soup.title.text,
-        "price": 0.0
-    }
     id = id = soup.find("div", class_="inner-price base-unit").parent.get("data-partnersku")
     headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
     data = {"ProductId":[],"partnersku":[str(id).replace(" ", "+")]}
@@ -87,15 +80,12 @@ def get_woody_product(url: str) -> Dict[str, str]:
     data = "products="+quote(data).replace("%2B", "+")
     api_url = "https://fellessonsbygghandel.woody.se/api/externalprice/priceinfos"
     res = requests.post(api_url, data=data, headers=headers)
-    product["price"] = float(res.json()["partnerskus"][0]["Price"].replace(",", ".").replace("\xa0", ""))
-
-    return product
+    return float(res.json()["partnerskus"][0]["Price"].replace(",", ".").replace("\xa0", ""))
 
 
 def get_byggmax_product(url: str) -> Dict[str, str]:
     content = get_url_content(url)
     soup = BeautifulSoup(content, "html.parser")
-    title = soup.find(lambda tag: tag.name=="span" and tag.attrs.get("data-ui-id", "") == "page-title-wrapper").get_text()
     base_tag = soup.find("div", class_="price-box price-final_price")
 
     price_kr = int(base_tag.find("span", class_="integer").get_text())
@@ -103,13 +93,7 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
     price_decimals = float(decimal_text if decimal_text.strip() != "" else "0")
     display_unit = base_tag.find("span", class_="package-display-unit").get_text()
 
-    price = price_kr + price_decimals / 100.0
-
-    return {
-        "store": "byggmax",
-        "description": title,
-        "price": price
-    }
+    return price_kr + price_decimals / 100.0
 
 
 def notify_result(failed_urls: List[str]) -> None:
@@ -148,33 +132,29 @@ def create_email(monday: bool, failed_urls: List[str]) -> str:
         """.format(", ".join(failed_urls), datetime.now())
 
 
-total_sources = sum(len(group["sources"]) for group in lumber_sources)
-processed_sources = 0
+processed_products = 0
 failed_urls = []
-for group in lumber_sources:
-    for source in group["sources"]:
-        product = {}
-        try:
-            url = source["url"]
-            alt_unit_factor = source.get("alt_unit_factor", 1.0)
-            if "optimera" in url:
-                product = get_optimera_product(url)
-            if "woody" in url:
-                product = get_woody_product(url)
-            if "byggmax" in url:
-                product = get_byggmax_product(url)
-            product["price"] = product["price"] / alt_unit_factor
-            product["date"] = datetime.utcnow().date().isoformat()
-            product["group_name"] = group["name"]
-            product["url"] = url
-            logger.debug(product)
-            resp = requests.post(url="http://localhost:5000/api/pricedproduct", json=product, headers={"access_token": access_token})
-        except Exception as e:
-            logger.exception(f"Got exception {e} for url {url}")
-            print(url)
-            traceback.print_exc()
-            failed_urls.append(url)
-        processed_sources += 1
-        print(f"Processed {processed_sources}/{total_sources}")
+for id, store, url in products:
+    try:
+        price = 0.0
+        if store == "optimera":
+            price = get_optimera_product(url)
+        if store == "woody":
+            price = get_woody_product(url)
+        if store == "byggmax":
+            price = get_byggmax_product(url)
+        price_snapshot = {
+            "price": price,
+            "date": datetime.utcnow().date().isoformat(),
+        }
+        logger.debug(f"product id: {id}, store: {store}, price data: {price_snapshot}")
+        resp = requests.post(url=f"http://localhost:5000/api/products/{id}/prices", json=price_snapshot, headers={"access_token": access_token})
+    except Exception as e:
+        logger.exception(f"Got exception {e} for url {url}")
+        print(url)
+        traceback.print_exc()
+        failed_urls.append(url)
+    processed_products += 1
+    print(f"Processed {processed_products}/{len(products)}")
 
 notify_result(failed_urls)

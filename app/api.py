@@ -39,6 +39,7 @@ def create_priced_product(id, body: PriceCreateModel):
         current_app.logger.warning(f"Already got price snapshot {body}")
         abort(400)
     
+    # TODO handle price_modifier here
     ps = PriceSnapshot()
     ps.product_id = product.id
     ps.date = body.date
