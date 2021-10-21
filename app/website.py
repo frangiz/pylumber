@@ -1,4 +1,4 @@
-from app.services import get_priced_products
+from app.services import get_products_with_prices
 from flask import Blueprint, render_template
 
 bp = Blueprint("website", __name__)
@@ -32,14 +32,14 @@ def get_last_price_change(prices):
 def index():
     with open("version.txt", "r") as f:
         version = f.readline().strip()
-    all_prices = get_priced_products()
+    all_prices = get_products_with_prices()
     price_tables_data = {}
     for group in all_prices:
         price_tables_data[group["group_name"]] = []
-        for source in group["sources"]:
-            last_price_change = get_last_price_change(source["prices"])
+        for product in group["products"]:
+            last_price_change = get_last_price_change(product["prices"])
             data = {
-                'store': source["store"],
+                'store': product["store"],
                 'date': last_price_change["date"],
                 'price': float_to_kr_str(last_price_change["price"])[1:],
                 'price_changed': last_price_change["change"]

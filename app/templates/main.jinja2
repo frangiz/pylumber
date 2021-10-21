@@ -30,8 +30,8 @@
             <div class="card chart-container">
                 <canvas id="chart_{{ loop.index }}"></canvas>
                 <ul>
-                    {% for source in group["sources"] %}
-                        <li><a href="{{ source["url"] }}" target="_blank">{{ source["source"] }} - {{ source["description"] }}</a></li>
+                    {% for product in group["products"] %}
+                        <li><a href="{{ product["url"] }}" target="_blank">{{ product["store"] }} - {{ product["description"] }}</a></li>
                     {% endfor %}
                 </ul>
             </div>
@@ -50,17 +50,17 @@
             type: 'line',
             data: {
                 labels: [
-                    {% for price_snapshop in group["sources"][0]["prices"] %}
+                    {% for price_snapshop in group["products"][0]["prices"] %}
                         "{{ price_snapshop["date"] }}",
                     {% endfor %}
                 ],
                 datasets: [
-                    {% for source in group["sources"] %}
+                    {% for product in group["products"] %}
                         {
-                            label: '{{ source["store"] }}',
-                            backgroundColor: colorMapping['{{ source['store'] }}'],
+                            label: '{{ product["store"] }}',
+                            backgroundColor: colorMapping['{{ product['store'] }}'],
                             data: [
-                                {% for price_snapshop in source["prices"] %}
+                                {% for price_snapshop in product["prices"] %}
                                     {{ price_snapshop["price"] }},
                                 {% endfor %}
                             ],
@@ -69,7 +69,20 @@
                     {% endfor %}
                 ]
             },
-            options: {},
+            options: {
+                elements: {
+                    line: {
+                        tension: 0
+                    }
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            },
         });
     {% endfor %}
 </script>
