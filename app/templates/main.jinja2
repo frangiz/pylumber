@@ -40,7 +40,7 @@
     <p style="text-align: center;">Version: {{ version }}</p>
 </body>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0-rc.1/Chart.bundle.js"></script>
 <script>
     var colorMapping = { 'optimera': 'rgb(0, 0, 0)', 'woody': 'rgb(0, 166, 81)', 'byggmax': 'rgb(255, 225, 50)'};
     {% for group in groups %}
@@ -49,11 +49,6 @@
         const myChart{{ loop.index }} = new Chart(ctx{{ loop.index }}, {
             type: 'line',
             data: {
-                labels: [
-                    {% for price_snapshop in group["products"][0]["prices"] %}
-                        "{{ price_snapshop["date"] }}",
-                    {% endfor %}
-                ],
                 datasets: [
                     {% for product in group["products"] %}
                         {
@@ -61,7 +56,7 @@
                             backgroundColor: colorMapping['{{ product['store'] }}'],
                             data: [
                                 {% for price_snapshop in product["prices"] %}
-                                    {{ price_snapshop["price"] }},
+                                    { t:'{{ price_snapshop["date"] }}', y:{{ price_snapshop["price"] }} },
                                 {% endfor %}
                             ],
                             fill: false
@@ -76,6 +71,16 @@
                     }
                 },
                 scales: {
+                    xAxes: [{
+                        type: 'time',
+                        distribution: 'linear',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'YYYY-MM-DD'
+                            },
+                        },
+                    }],
                     yAxes: [{
                         ticks: {
                             beginAtZero: true

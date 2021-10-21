@@ -24,11 +24,12 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+dev_files/
+access_tokens.txt
+app.pid
+collector_cnf.json
 dumps/
+logs/
 lumber_sources.json
 pylumber.db
-app.pid
-logs/
 version.txt
-collector_cnf.json
-access_tokens.txt

@@ -56,11 +56,3 @@ def get_products():
     if request.args.get("prices", False):
         return jsonify(services.get_products_with_prices()), 200
     return jsonify(services.get_products()), 200
-
-@bp.route("/foo", methods=["GET"])
-def foo():
-    price_snapshots = PriceSnapshot.query.all()
-    for ps in price_snapshots:
-        ps.price = round(ps.price, 2)
-        db.session.add(ps)
-    db.session.commit()
