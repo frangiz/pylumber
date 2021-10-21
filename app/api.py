@@ -7,6 +7,7 @@ import app.services as services
 from pydantic import BaseModel, validator
 from flask_pydantic import validate
 from app.auth import token_required
+from app.modifiers import price_modifiers
 
 bp = Blueprint("api", __name__)
 
@@ -38,12 +39,11 @@ def create_priced_product(id, body: PriceCreateModel):
     if PriceSnapshot.query.filter_by(product_id=product.id, date=body.date).first():
         current_app.logger.warning(f"Already got price snapshot {body}")
         abort(400)
-    
-    # TODO handle price_modifier here
+
     ps = PriceSnapshot()
     ps.product_id = product.id
     ps.date = body.date
-    ps.price = body.price
+    ps.price = round(price_modifiers[product.price_modifier](body.price), 2)
 
     db.session.add(ps)
     db.session.commit()
@@ -56,3 +56,11 @@ def get_products():
     if request.args.get("prices", False):
         return jsonify(services.get_products_with_prices()), 200
     return jsonify(services.get_products()), 200
+
+@bp.route("/foo", methods=["GET"])
+def foo():
+    price_snapshots = PriceSnapshot.query.all()
+    for ps in price_snapshots:
+        ps.price = round(ps.price, 2)
+        db.session.add(ps)
+    db.session.commit()

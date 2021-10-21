@@ -36,10 +36,10 @@ def index():
     price_tables_data = {}
     for group in all_prices:
         price_tables_data[group["group_name"]] = []
-        for source in group["sources"]:
-            last_price_change = get_last_price_change(source["prices"])
+        for product in group["products"]:
+            last_price_change = get_last_price_change(product["prices"])
             data = {
-                'store': source["store"],
+                'store': product["store"],
                 'date': last_price_change["date"],
                 'price': float_to_kr_str(last_price_change["price"])[1:],
                 'price_changed': last_price_change["change"]
