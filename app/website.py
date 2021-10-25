@@ -12,6 +12,12 @@ def float_to_kr_str(value: float) -> str:
 
 
 def get_last_price_change(prices):
+    if len(prices) == 0:
+        return {
+            "date": None,
+            "price": 0.0,
+            "change": "---"
+        }
     price_change = {
         "date": prices[0]["date"],
         "price": prices[0]["price"],
@@ -31,6 +37,8 @@ def get_last_price_change(prices):
 
 
 def get_price_change_color(date: str, price_change: str) -> str:
+    if date is None:
+        return "black"
     if (datetime.utcnow() - parser.parse(date)).days <= 5:
         if float(price_change.replace("kr", "")) > 0.0:
             return "red"
