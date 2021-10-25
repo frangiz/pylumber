@@ -21,11 +21,18 @@ class PriceCreateModel(BaseModel):
         return value
 
 
-class Source(BaseModel):
+class ProductCreateModel(BaseModel):
     group_name: str
-    source: str
+    store: str
+    description: str = ""
     url: str
-    alt_unit_factor: float
+    price_modifier: str
+
+    @validator("price_modifier")
+    def price_modifier_must_be_known(cls, value):
+        if value in price_modifiers:
+            return value
+        raise ValueError("Modifier not known")
 
 
 @bp.route("/products/<int:id>/prices", methods=["POST"])
@@ -56,3 +63,24 @@ def get_products():
     if request.args.get("prices", False):
         return jsonify(services.get_products_with_prices()), 200
     return jsonify(services.get_products()), 200
+
+
+@bp.route("/products", methods=["POST"])
+@token_required
+@validate()
+def create_product(body: ProductCreateModel):
+    product = Product.query.filter_by(group_name=body.group_name, store=body.store).first()
+    if product:
+        current_app.logger.warning(f"Product already exits {body}")
+        abort(400)
+    p = Product()
+    p.group_name = body.group_name
+    p.store = body.store
+    p.description = body.description
+    p.url = body.url
+    p.price_modifier = body.price_modifier
+
+    db.session.add(p)
+    db.session.commit()
+
+    return jsonify({"msg": "ok"}), 200
