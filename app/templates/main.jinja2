@@ -27,7 +27,14 @@
         <h2 style="text-align: center;">{{ group["group_name"] }}</h2>
         {{ macros.price_table(price_tables_data[group["group_name"]]) }}
         <div class="row">
-            <div class="card chart-container">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#chart_container_{{ loop.index }}" aria-expanded="false" aria-controls="chart_container_{{ loop.index }}">Show graph</button>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+        <div class="row">
+            <div id=chart_container_{{ loop.index }} class="card chart-container collapse">
                 <canvas id="chart_{{ loop.index }}"></canvas>
                 <ul>
                     {% for product in group["products"] %}
