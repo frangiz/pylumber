@@ -1,5 +1,7 @@
 from app.services import get_products_with_prices
 from flask import Blueprint, render_template
+from dateutil import parser
+from datetime import datetime
 
 bp = Blueprint("website", __name__)
 
@@ -28,6 +30,15 @@ def get_last_price_change(prices):
     return price_change
 
 
+def get_price_change_color(date: str, price_change: str) -> str:
+    if (datetime.utcnow() - parser.parse(date)).days <= 5:
+        if float(price_change.replace("kr", "")) > 0.0:
+            return "red"
+        else:
+            return "green"
+    return "black"
+
+
 @bp.route("/", methods=["GET"])
 def index():
     with open("version.txt", "r") as f:
@@ -42,7 +53,8 @@ def index():
                 'store': product["store"],
                 'date': last_price_change["date"],
                 'price': float_to_kr_str(last_price_change["price"])[1:],
-                'price_changed': last_price_change["change"]
+                'price_changed': last_price_change["change"],
+                'text_color': get_price_change_color(last_price_change["date"], last_price_change["change"])
             }
             price_tables_data[group["group_name"]].append(data)
     return render_template("main.jinja2", groups=all_prices, price_tables_data=price_tables_data, version=version)

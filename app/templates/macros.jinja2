@@ -19,7 +19,7 @@
                             <td>{{ row["store"] }}</td>
                             <td>{{ row["date"] }}</td>
                             <td>{{ row["price"] }}</td>
-                            <td>{{ row["price_changed"] }}</td>
+                            <td style='color: {{ row["text_color"] }};''>{{ row["price_changed"] }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
