@@ -37,7 +37,7 @@ def get_last_price_change(prices):
 
 
 def get_price_change_color(date: str, price_change: str) -> str:
-    if date is None:
+    if date is None or price_change == "---":
         return "black"
     if (datetime.utcnow() - parser.parse(date)).days <= 5:
         if float(price_change.replace("kr", "")) > 0.0:
