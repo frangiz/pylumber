@@ -95,6 +95,13 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
 
     return price_kr + price_decimals / 100.0
 
+def get_bauhaus_product(url: str) -> float:
+    content = get_url_content(url)
+    soup = BeautifulSoup(content, "html.parser")
+    base_tag = soup.find("div", class_="price-box price-final_price")
+
+    return float(base_tag.find(lambda tag: tag.name=="meta" and tag.attrs.get("itemprop", "") == "price").attrs.get("content"))
+
 
 def notify_result(failed_urls: List[str]) -> None:
     is_monday = datetime.today().isoweekday() == 1
@@ -143,6 +150,8 @@ for id, store, url in products:
             price = get_woody_product(url)
         if store == "byggmax":
             price = get_byggmax_product(url)
+        if store == "bauhaus":
+            price = get_bauhaus_product(url)
         price_snapshot = {
             "price": price,
             "date": datetime.utcnow().date().isoformat(),

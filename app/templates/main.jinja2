@@ -49,7 +49,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0-rc.1/Chart.bundle.js"></script>
 <script>
-    var colorMapping = { 'optimera': 'rgb(0, 0, 0)', 'woody': 'rgb(0, 166, 81)', 'byggmax': 'rgb(255, 225, 50)'};
+    var colorMapping = { 'optimera': 'rgb(0, 0, 0)', 'woody': 'rgb(0, 166, 81)', 'byggmax': 'rgb(255, 225, 50)', 'bauhaus': 'rgb(204, 0, 0)'};
     {% for group in groups %}
         // Draw the graphs
         ctx{{ loop.index }} = document.getElementById("chart_{{ loop.index }}").getContext('2d');
