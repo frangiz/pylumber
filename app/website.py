@@ -54,7 +54,7 @@ def index():
     all_prices = get_products_with_prices()
     price_tables_data = {}
     for group in all_prices:
-        price_tables_data[group["group_name"]] = []
+        products = []
         for product in group["products"]:
             last_price_change = get_last_price_change(product["prices"])
             data = {
@@ -64,5 +64,7 @@ def index():
                 'price_changed': last_price_change["change"],
                 'text_color': get_price_change_color(last_price_change["date"], last_price_change["change"])
             }
-            price_tables_data[group["group_name"]].append(data)
+            products.append(data)
+        products.sort(key=lambda p: float(p["price"].replace(" kr", "")), reverse=True)
+        price_tables_data[group["group_name"]] = products
     return render_template("main.jinja2", groups=all_prices, price_tables_data=price_tables_data, version=version)
