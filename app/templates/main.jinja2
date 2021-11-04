@@ -61,6 +61,7 @@
                         {
                             label: '{{ product["store"] }}',
                             backgroundColor: colorMapping['{{ product['store'] }}'],
+                            borderColor: colorMapping['{{ product['store'] }}'],
                             data: [
                                 {% for price_snapshop in product["prices"] %}
                                     { t:'{{ price_snapshop["date"] }}', y:{{ price_snapshop["price"] }} },
