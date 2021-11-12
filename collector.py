@@ -86,14 +86,24 @@ def get_woody_product(url: str) -> Dict[str, str]:
 def get_byggmax_product(url: str) -> Dict[str, str]:
     content = get_url_content(url)
     soup = BeautifulSoup(content, "html.parser")
-    base_tag = soup.find("div", class_="price-box price-final_price")
 
-    price_kr = int(base_tag.find("span", class_="integer").get_text())
-    decimal_text = base_tag.find("span", class_="decimal").get_text()
-    price_decimals = float(decimal_text if decimal_text.strip() != "" else "0")
-    display_unit = base_tag.find("span", class_="package-display-unit").get_text()
-
-    return price_kr + price_decimals / 100.0
+    price = 0.0
+    for script_tag in soup.find_all("script", type="application/ld+json"):
+        tag_data = json.loads(script_tag.string)
+        if type(tag_data) != list:
+            continue
+        
+        product_types = [
+            item for item in tag_data if item.get("@type", None) == "Product"
+        ]
+        if len(product_types) == product_types[0]["offers"].get("url", None).startswith(url):
+            price = product_types[0]["offers"]["price"]
+        else:
+            print(url)
+            for item in product_types:
+                if item["offers"].get("url", None) == url:
+                    price = item["offers"]["price"]
+    return price
 
 def get_bauhaus_product(url: str) -> float:
     content = get_url_content(url)
