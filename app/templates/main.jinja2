@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cdbootstrap@1.0.0/css/cdb.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/cdbootstrap@1.0.0/js/cdb.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cdbootstrap@1.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0-rc.1/Chart.bundle.js"></script>
 </head>
 
 <style>
@@ -33,69 +34,7 @@
             </div>
             <div class="col-md-3"></div>
         </div>
-        <div class="row">
-            <div id=chart_container_{{ loop.index }} class="card chart-container collapse">
-                <canvas id="chart_{{ loop.index }}"></canvas>
-                <ul>
-                    {% for product in group["products"] %}
-                        <li><a href="{{ product["url"] }}" target="_blank">{{ product["store"] }} - {{ product["description"] }}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
+        {{ macros.draw_price_graph(loop.index, group) }}
     {% endfor %}
     <p style="text-align: center;">Version: {{ version }}</p>
 </body>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0-rc.1/Chart.bundle.js"></script>
-<script>
-    var colorMapping = { 'optimera': 'rgb(0, 0, 0)', 'woody': 'rgb(0, 166, 81)', 'byggmax': 'rgb(255, 225, 50)', 'bauhaus': 'rgb(204, 0, 0)'};
-    {% for group in groups %}
-        // Draw the graphs
-        ctx{{ loop.index }} = document.getElementById("chart_{{ loop.index }}").getContext('2d');
-        const myChart{{ loop.index }} = new Chart(ctx{{ loop.index }}, {
-            type: 'line',
-            data: {
-                datasets: [
-                    {% for product in group["products"] %}
-                        {
-                            label: '{{ product["store"] }}',
-                            backgroundColor: colorMapping['{{ product['store'] }}'],
-                            borderColor: colorMapping['{{ product['store'] }}'],
-                            data: [
-                                {% for price_snapshop in product["prices"] %}
-                                    { t:'{{ price_snapshop["date"] }}', y:{{ price_snapshop["price"] }} },
-                                {% endfor %}
-                            ],
-                            fill: false
-                        },
-                    {% endfor %}
-                ]
-            },
-            options: {
-                elements: {
-                    line: {
-                        tension: 0
-                    }
-                },
-                scales: {
-                    xAxes: [{
-                        type: 'time',
-                        distribution: 'linear',
-                        time: {
-                            unit: 'day',
-                            displayFormats: {
-                                day: 'YYYY-MM-DD'
-                            },
-                        },
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }]
-                }
-            },
-        });
-    {% endfor %}
-</script>

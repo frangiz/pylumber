@@ -30,3 +30,65 @@
     <div class="col-md-3"></div>
 </div>
 {% endmacro %}}
+
+{% macro draw_price_graph(id, group) %}
+<div class="row">
+    <div id="chart_container_{{ id }}" class="card chart-container collapse">
+        <canvas id="chart_{{ id }}"></canvas>
+        <ul>
+            {% for product in group["products"] %}
+                <li><a href="{{ product["url"] }}" target="_blank">{{ product["store"] }} - {{ product["description"] }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<script>
+    var colorMapping = { 'optimera': 'rgb(0, 0, 0)', 'woody': 'rgb(0, 166, 81)', 'byggmax': 'rgb(255, 225, 50)', 'bauhaus': 'rgb(204, 0, 0)'};
+    // Draw the graph
+    ctx{{ id }} = document.getElementById("chart_{{ id }}").getContext('2d');
+    const myChart{{ id }} = new Chart(ctx{{ id }}, {
+        type: 'line',
+        data: {
+            datasets: [
+                {% for product in group["products"] %}
+                    {
+                        label: '{{ product["store"] }}',
+                        backgroundColor: colorMapping['{{ product['store'] }}'],
+                        borderColor: colorMapping['{{ product['store'] }}'],
+                        data: [
+                            {% for price_snapshop in product["prices"] %}
+                                { t:'{{ price_snapshop["date"] }}', y:{{ price_snapshop["price"] }} },
+                            {% endfor %}
+                        ],
+                        fill: false
+                    },
+                {% endfor %}
+            ]
+        },
+        options: {
+            elements: {
+                line: {
+                    tension: 0
+                }
+            },
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    distribution: 'linear',
+                    time: {
+                        unit: 'day',
+                        displayFormats: {
+                            day: 'YYYY-MM-DD'
+                        },
+                    },
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        },
+    });
+</script>
+{% endmacro %}}
