@@ -62,12 +62,21 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
         if type(tag_data) != list:
             continue
         product_types = list(filter(lambda item: item.get("@type", None) == "Product", tag_data))
+
+        def fix_url(the_url):
+            quoted_chars = {
+                'ä': quote('ä')
+            }
+            for k, v in quoted_chars.items():
+                the_url = the_url.replace(k, v)
+            return the_url
+
         # We have one product on the page, so return the price.
-        if len(product_types) == 1 and product_types[0]["offers"].get("url", None).startswith(url):
+        if len(product_types) == 1 and fix_url(product_types[0]["offers"].get("url", None)).startswith(url):
             return product_types[0]["offers"]["price"]
         # We have multiple products on the same page selectable by dropdowns.
         for item in product_types:
-            if item["offers"].get("url", None) == url:
+            if fix_url(item["offers"].get("url", None)) == url:
                 return item["offers"]["price"]
     return 0.0
 
