@@ -1,38 +1,15 @@
-from datetime import datetime
 from flask import Blueprint, request, current_app, abort
 from flask.json import jsonify
 from app import db
 from app.models import Product, PriceSnapshot
 import app.services as services
-from pydantic import BaseModel, validator
+from app.resources import PriceCreateModel, ProductCreateModel, price_modifiers
+
 from flask_pydantic import validate
 from app.auth import token_required
-from app.modifiers import price_modifiers
+
 
 bp = Blueprint("api", __name__)
-
-class PriceCreateModel(BaseModel):
-    price: float
-    date: str
-
-    @validator("date")
-    def date_must_be_isoformat(cls, value):
-        datetime.strptime(value, "%Y-%m-%d")
-        return value
-
-
-class ProductCreateModel(BaseModel):
-    group_name: str
-    store: str
-    description: str = ""
-    url: str
-    price_modifier: str
-
-    @validator("price_modifier")
-    def price_modifier_must_be_known(cls, value):
-        if value in price_modifiers:
-            return value
-        raise ValueError("Modifier not known")
 
 
 @bp.route("/products/<int:id>/prices", methods=["POST"])

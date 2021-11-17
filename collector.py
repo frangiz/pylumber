@@ -11,45 +11,15 @@ from urllib.parse import quote
 import traceback
 import ssl
 import smtplib
+from app.resources import PriceCreateModel
 
-script_path = Path(__file__).parent.absolute()
-Path(script_path, "dumps").mkdir(exist_ok=True)
-Path(script_path, "logs").mkdir(exist_ok=True)
-
-logger = logging.getLogger("collector")
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
-fh = logging.FileHandler(Path(script_path, "logs", "collector.log"), encoding="utf-8")
-fh.setLevel(logging.DEBUG)
-fh.setFormatter(formatter)
-logger.addHandler(fh)
-
-products = []
-resp = requests.get(url="http://localhost:5000/api/products")
-for group in resp.json():
-    for product in group["products"]:
-        products.append((product["id"], product["store"], product["url"]))
-
-access_token = None
-# Let us use the first token in the allow list.
-with open(Path(script_path, "access_tokens.txt"), 'r+') as f:
-    access_token = f.readline().strip()
 
 def get_url_content(url: str) -> str:
-    if url.startswith("#"):
-            return
-    provider = url.split(".se")[0].split(".")[-1]
-
-    # Check if the file is cached
-    cached_name = provider +"-" +url.strip().split("/")[-1]
-    #if Path("dumps", cached_name).exists():
-        #with open(Path("dumps", cached_name), "r") as f:
-            #return "".join(f.readlines())
-
-    # File is not cached, load it from the internet
     resp = requests.get(url.strip())
 
-    # Dump the result
+    # Dump the response in a file in case we need to go on a bug hunt.
+    provider = url.split(".se")[0].split(".")[-1]
+    cached_name = provider +"-" +url.strip().split("/")[-1]
     with open(Path(script_path, "dumps", cached_name), "w") as f:
         f.writelines(resp.text)
 
@@ -87,23 +57,19 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
     content = get_url_content(url)
     soup = BeautifulSoup(content, "html.parser")
 
-    price = 0.0
     for script_tag in soup.find_all("script", type="application/ld+json"):
         tag_data = json.loads(script_tag.string)
         if type(tag_data) != list:
             continue
-        
-        product_types = [
-            item for item in tag_data if item.get("@type", None) == "Product"
-        ]
-        if len(product_types) == product_types[0]["offers"].get("url", None).startswith(url):
-            price = product_types[0]["offers"]["price"]
-        else:
-            print(url)
-            for item in product_types:
-                if item["offers"].get("url", None) == url:
-                    price = item["offers"]["price"]
-    return price
+        product_types = list(filter(lambda item: item.get("@type", None) == "Product", tag_data))
+        # We have one product on the page, so return the price.
+        if len(product_types) == 1 and product_types[0]["offers"].get("url", None).startswith(url):
+            return product_types[0]["offers"]["price"]
+        # We have multiple products on the same page selectable by dropdowns.
+        for item in product_types:
+            if item["offers"].get("url", None) == url:
+                return item["offers"]["price"]
+    return 0.0
 
 def get_bauhaus_product(url: str) -> float:
     content = get_url_content(url)
@@ -149,31 +115,60 @@ def create_email(monday: bool, failed_urls: List[str]) -> str:
         """.format(", ".join(failed_urls), datetime.now())
 
 
-processed_products = 0
-failed_urls = []
-for id, store, url in products:
-    try:
-        price = 0.0
-        if store == "optimera":
-            price = get_optimera_product(url)
-        if store == "woody":
-            price = get_woody_product(url)
-        if store == "byggmax":
-            price = get_byggmax_product(url)
-        if store == "bauhaus":
-            price = get_bauhaus_product(url)
-        price_snapshot = {
-            "price": price,
-            "date": datetime.utcnow().date().isoformat(),
-        }
-        logger.debug(f"product id: {id}, store: {store}, price data: {price_snapshot}")
-        resp = requests.post(url=f"http://localhost:5000/api/products/{id}/prices", json=price_snapshot, headers={"access_token": access_token})
-    except Exception as e:
-        logger.exception(f"Got exception {e} for url {url}")
-        print(url)
-        traceback.print_exc()
-        failed_urls.append(url)
-    processed_products += 1
-    print(f"Processed {processed_products}/{len(products)}")
+def get_products():
+    products = []
+    resp = requests.get(url="http://localhost:5000/api/products")
+    for group in resp.json():
+        for product in group["products"]:
+            products.append((product["id"], product["store"], product["url"]))
+    return products
 
-notify_result(failed_urls)
+
+def collect(access_token, products):
+    processed_products = 0
+    failed_urls = []
+    for id, store, url in products:
+        try:
+            price = 0.0
+            if store == "optimera":
+                price = get_optimera_product(url)
+            if store == "woody":
+                price = get_woody_product(url)
+            if store == "byggmax":
+                price = get_byggmax_product(url)
+            if store == "bauhaus":
+                price = get_bauhaus_product(url)
+
+            price_snapshot = PriceCreateModel(price=price, date=datetime.utcnow().date().isoformat())
+            logger.debug(f"product id: {id}, store: {store}, price data: {price_snapshot.dict()}")
+            requests.post(url=f"http://localhost:5000/api/products/{id}/prices", json=price_snapshot.dict(), headers={"access_token": access_token})
+        except Exception as e:
+            logger.exception(f"Got exception {e} for url {url}")
+            print(url)
+            traceback.print_exc()
+            failed_urls.append(url)
+        processed_products += 1
+        print(f"Processed {processed_products}/{len(products)}")
+
+    notify_result(failed_urls)
+
+
+if __name__ == '__main__':
+    script_path = Path(__file__).parent.absolute()
+    Path(script_path, "dumps").mkdir(exist_ok=True)
+    Path(script_path, "logs").mkdir(exist_ok=True)
+
+    logger = logging.getLogger("collector")
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
+    fh = logging.FileHandler(Path(script_path, "logs", "collector.log"), encoding="utf-8")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
+    access_token = None
+    # Let us use the first token in the allow list.
+    with open(Path(script_path, "access_tokens.txt"), 'r+') as f:
+        access_token = f.readline().strip()
+
+    collect(access_token, get_products())
