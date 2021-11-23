@@ -53,7 +53,6 @@ def create_product(body: ProductCreateModel):
     p = Product()
     p.group_name = body.group_name
     p.store = body.store
-    p.description = body.description
     p.url = body.url
     p.price_modifier = body.price_modifier
 

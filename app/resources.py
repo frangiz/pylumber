@@ -22,7 +22,6 @@ price_modifiers = {
 class ProductCreateModel(BaseModel):
     group_name: str
     store: str
-    description: str = ""
     url: str
     price_modifier: str
 

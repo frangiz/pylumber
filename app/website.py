@@ -59,6 +59,7 @@ def index():
             last_price_change = get_last_price_change(product["prices"])
             data = {
                 'store': product["store"],
+                'url': product["url"],
                 'date': last_price_change["date"],
                 'price': float_to_kr_str(last_price_change["price"])[1:],
                 'price_changed': last_price_change["change"],

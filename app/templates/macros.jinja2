@@ -16,7 +16,7 @@
                     <tbody>
                         {% for row in data %}
                         <tr>
-                            <td>{{ row["store"] }}</td>
+                            <td><a href="{{ row["url"] }}" target="_blank">{{ row["store"] }}</a></td>
                             <td>{{ row["date"] }}</td>
                             <td>{{ row["price"] }}</td>
                             <td style='color: {{ row["text_color"] }};''>{{ row["price_changed"] }}</td>
@@ -35,11 +35,6 @@
 <div class="row">
     <div id="chart_container_{{ id }}" class="card chart-container collapse">
         <canvas id="chart_{{ id }}"></canvas>
-        <ul>
-            {% for product in group["products"] %}
-                <li><a href="{{ product["url"] }}" target="_blank">{{ product["store"] }} - {{ product["description"] }}</a></li>
-            {% endfor %}
-        </ul>
     </div>
 </div>
 <script>
