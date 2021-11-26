@@ -2,13 +2,15 @@ from app.models import Product, PriceSnapshot
 from itertools import groupby
 from operator import attrgetter
 from typing import List
+from natsort import natsorted
 
 
 def get_products():
     entries = Product.query.all()
     entries.sort(key=lambda e: e.group_name)
 
-    return [{"group_name": k, "products": [e.to_dict_except(["group_name"]) for e in g]} for k, g in groupby(entries, attrgetter("group_name"))]
+    res = [{"group_name": k, "products": [e.to_dict_except(["group_name"]) for e in g]} for k, g in groupby(entries, attrgetter("group_name"))]
+    return natsorted(res, key=lambda g: g["group_name"])
 
 
 def filter_repeating_values(values: PriceSnapshot) -> List[PriceSnapshot]:
