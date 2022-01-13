@@ -12,6 +12,7 @@ import traceback
 import ssl
 import smtplib
 from app.resources import PriceCreateModel
+import argparse
 
 
 def get_url_content(url: str) -> str:
@@ -78,7 +79,7 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
         for item in product_types:
             if fix_url(item["offers"].get("url", None)) == url:
                 return item["offers"]["price"]
-    return 0.0
+    raise RuntimeError("No price found, probably something wrong with the html.")
 
 def get_bauhaus_product(url: str) -> float:
     content = get_url_content(url)
@@ -163,6 +164,15 @@ def collect(access_token, products):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Collecting some price snapshots.')
+    parser.add_argument(
+        "-s",
+        "--store",
+        choices=["optimera", "woody", "byggmax", "bauhaus"],
+        help="Collect only snapshots for this store.",
+    )
+    args = parser.parse_args()
+
     script_path = Path(__file__).parent.absolute()
     Path(script_path, "dumps").mkdir(exist_ok=True)
     Path(script_path, "logs").mkdir(exist_ok=True)
@@ -180,4 +190,7 @@ if __name__ == '__main__':
     with open(Path(script_path, "access_tokens.txt"), 'r+') as f:
         access_token = f.readline().strip()
 
-    collect(access_token, get_products())
+    products = get_products()
+    if args.store:
+        products = list(filter(lambda p: p[1]==args.store, products))
+    collect(access_token, products)
