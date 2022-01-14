@@ -167,7 +167,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Collecting some price snapshots.')
     parser.add_argument(
         "-s",
-        "--store",
+        "--stores",
+        nargs="*",
         choices=["optimera", "woody", "byggmax", "bauhaus"],
         help="Collect only snapshots for this store.",
     )
@@ -191,6 +192,6 @@ if __name__ == '__main__':
         access_token = f.readline().strip()
 
     products = get_products()
-    if args.store:
-        products = list(filter(lambda p: p[1]==args.store, products))
+    if args.stores:
+        products = list(filter(lambda p: p[1] in (args.stores), products))
     collect(access_token, products)
