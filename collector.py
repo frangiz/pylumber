@@ -20,14 +20,14 @@ def get_url_content(url: str) -> str:
 
     # Dump the response in a file in case we need to go on a bug hunt.
     provider = url.split(".se")[0].split(".")[-1]
-    cached_name = provider +"-" +url.strip().split("/")[-1]
+    cached_name = f"{provider}-" + url.strip().split("/")[-1]
     with open(Path(script_path, "dumps", cached_name), "w") as f:
         f.writelines(resp.text)
 
     return resp.text
 
 
-def get_optimera_product(url: str) -> Dict[str, str]:
+def get_optimera_price(url: str) -> Dict[str, str]:
     content = get_url_content(url)
     marker = r"'products':["
     try:
@@ -40,7 +40,7 @@ def get_optimera_product(url: str) -> Dict[str, str]:
         raise e
 
 
-def get_woody_product(url: str) -> Dict[str, str]:
+def get_woody_price(url: str) -> Dict[str, str]:
     content = get_url_content(url)
     soup = BeautifulSoup(content, "html.parser")
 
@@ -54,7 +54,7 @@ def get_woody_product(url: str) -> Dict[str, str]:
     return float(res.json()["partnerskus"][0]["Price"].replace(",", ".").replace("\xa0", ""))
 
 
-def get_byggmax_product(url: str) -> Dict[str, str]:
+def get_byggmax_price(url: str) -> Dict[str, str]:
     content = get_url_content(url)
     soup = BeautifulSoup(content, "html.parser")
 
@@ -81,7 +81,7 @@ def get_byggmax_product(url: str) -> Dict[str, str]:
                 return item["offers"]["price"]
     raise RuntimeError("No price found, probably something wrong with the html.")
 
-def get_bauhaus_product(url: str) -> float:
+def get_bauhaus_price(url: str) -> float:
     content = get_url_content(url)
     soup = BeautifulSoup(content, "html.parser")
     base_tag = soup.find("div", class_="price-box price-final_price")
@@ -90,7 +90,7 @@ def get_bauhaus_product(url: str) -> float:
 
 
 def notify_result(failed_urls: List[str]) -> None:
-    is_monday = datetime.today().isoweekday() == 1
+    is_monday = datetime.now().isoweekday() == 1
     if is_monday or failed_urls:
         smtp_config = {}
         with open(Path(script_path, "collector_cnf.json"), "r") as f:
@@ -141,13 +141,13 @@ def collect(access_token, products):
         try:
             price = 0.0
             if store == "optimera":
-                price = get_optimera_product(url)
-            if store == "woody":
-                price = get_woody_product(url)
-            if store == "byggmax":
-                price = get_byggmax_product(url)
-            if store == "bauhaus":
-                price = get_bauhaus_product(url)
+                price = get_optimera_price(url)
+            elif store == "woody":
+                price = get_woody_price(url)
+            elif store == "byggmax":
+                price = get_byggmax_price(url)
+            elif store == "bauhaus":
+                price = get_bauhaus_price(url)
 
             price_snapshot = PriceCreateModel(price=price, date=datetime.utcnow().date().isoformat())
             logger.debug(f"product id: {id}, store: {store}, price data: {price_snapshot.dict()}")
