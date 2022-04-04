@@ -66,7 +66,9 @@ def get_byggmax_price(url: str) -> Dict[str, str]:
 
         def fix_url(the_url):
             quoted_chars = {
-                'ä': quote('ä')
+                'å': quote('å'),
+                'ä': quote('ä'),
+                'ö': quote('ö')
             }
             for k, v in quoted_chars.items():
                 the_url = the_url.replace(k, v)
