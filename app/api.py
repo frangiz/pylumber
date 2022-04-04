@@ -53,6 +53,7 @@ def create_product(body: ProductCreateModel):
     p = Product()
     p.group_name = body.group_name
     p.store = body.store
+    p.description = ""  # Description need to be set until we have removed it from the db table.
     p.url = body.url
     p.price_modifier = body.price_modifier
 
