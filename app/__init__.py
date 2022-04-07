@@ -2,6 +2,8 @@ from config import Config
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+import logging
+from pathlib import Path
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -10,6 +12,16 @@ migrate = Migrate()
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    # setup logging
+    app_path = Path(__file__).parent.parent.absolute()
+    Path(app_path, "logs").mkdir(exist_ok=True)
+
+    logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
+    formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
+    handler = logging.FileHandler(Path(app_path, "logs", "pylumber.log"), encoding="utf-8")
+    handler.formatter = formatter
+    logger.addHandler(handler)
 
     db.init_app(app)
     migrate.init_app(app, db)
