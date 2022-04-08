@@ -22,7 +22,7 @@ def create_app(config_class=Config):
     handler = logging.FileHandler(Path(app_path, "logs", "pylumber.log"), encoding="utf-8")
     handler.formatter = formatter
     #logger.addHandler(handler)
-    app.logger.addHandler(handler)
+    logging.root.addHandler(handler)
 
     db.init_app(app)
     migrate.init_app(app, db)
