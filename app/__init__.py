@@ -17,11 +17,12 @@ def create_app(config_class=Config):
     app_path = Path(__file__).parent.parent.absolute()
     Path(app_path, "logs").mkdir(exist_ok=True)
 
-    logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
+    #logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
     formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
     handler = logging.FileHandler(Path(app_path, "logs", "pylumber.log"), encoding="utf-8")
     handler.formatter = formatter
-    logger.addHandler(handler)
+    #logger.addHandler(handler)
+    app.logger.addHandler(handler)
 
     db.init_app(app)
     migrate.init_app(app, db)
