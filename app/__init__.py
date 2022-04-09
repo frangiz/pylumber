@@ -21,13 +21,12 @@ def create_app(config_class=Config):
     handler = logging.FileHandler(Path(app_path, "logs", "pylumber.log"), encoding="utf-8")
     handler.formatter = formatter
 
-    logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
+    # The werkzeug logger is available in dev mode, so grab that one
+    # and add the handler to it.
+    logger = logging.getLogger('werkzeug')
     if logger.hasHandlers():
         logger.addHandler(handler)
     else:
-        gunicorn_logger = logging.getLogger('gunicorn.error')
-        app.logger.handlers = gunicorn_logger.handlers
-        app.logger.setLevel(gunicorn_logger.level)
         app.logger.addHandler(handler)
 
     db.init_app(app)

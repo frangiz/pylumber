@@ -14,5 +14,5 @@ while true; do
     sleep 5
 done
 echo $(git rev-parse --short HEAD) > version.txt
-gunicorn -p app.pid -D -b :5000 pylumber:app
+gunicorn -p app.pid --access-logfile logs/gunicorn.log -D -b :5000 pylumber:app
 echo "Upgrade done, app started again"
