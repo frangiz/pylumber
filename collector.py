@@ -13,6 +13,7 @@ import ssl
 import smtplib
 from app.resources import PriceCreateModel
 import argparse
+from datetime import timezone
 
 
 def get_url_content(url: str) -> str:
@@ -129,17 +130,18 @@ def create_email(monday: bool, failed_urls: List[str]) -> str:
 
 def get_products():
     products = []
-    resp = requests.get(url="http://localhost:5000/api/products")
+    resp = requests.get(url="http://localhost:5000/api/products?prices=true")
     for group in resp.json():
         for product in group["products"]:
-            products.append((product["id"], product["store"], product["url"]))
+            last_price_snapshot = product["prices"][-1 ]["date"] if product["prices"] else None
+            if last_price_snapshot != datetime.now(timezone.utc).date().isoformat():
+                products.append((product["id"], product["store"], product["url"]))
     return products
 
 
 def collect(access_token, products):
-    processed_products = 0
     failed_urls = []
-    for id, store, url in products:
+    for processed_products, (id, store, url) in enumerate(products, start=1):
         try:
             price = 0.0
             if store == "optimera":
@@ -151,7 +153,7 @@ def collect(access_token, products):
             elif store == "bauhaus":
                 price = get_bauhaus_price(url)
 
-            price_snapshot = PriceCreateModel(price=price, date=datetime.utcnow().date().isoformat())
+            price_snapshot = PriceCreateModel(price=price, date=datetime.now(timezone.utc).date().isoformat())
             logger.debug(f"product id: {id}, store: {store}, price data: {price_snapshot.dict()}")
             requests.post(url=f"http://localhost:5000/api/products/{id}/prices", json=price_snapshot.dict(), headers={"access_token": access_token})
         except Exception as e:
@@ -159,7 +161,6 @@ def collect(access_token, products):
             print(url)
             traceback.print_exc()
             failed_urls.append(url)
-        processed_products += 1
         print(f"Processed {processed_products}/{len(products)}")
 
     notify_result(failed_urls)
