@@ -4,13 +4,11 @@ from flask import request, abort
 
 @lru_cache
 def is_token_valid(token: str) -> bool:
-    if len(token.strip()) == 0:
+    if not token.strip():
         return False
     with open('access_tokens.txt') as f:
-        allowed_tokens = [t.strip() for t in f.readlines()]
-        if token in allowed_tokens:
-            return True
-    return False
+        allowed_tokens = {t.strip() for t in f.readlines()}
+    return token in allowed_tokens
 
 
 def token_required(f):

@@ -18,8 +18,12 @@ from common.price_fetcher import PriceFetcher
 def notify_result(failed_urls: List[str]) -> None:
     is_monday = datetime.now().isoweekday() == 1
     if is_monday or failed_urls:
+        config_file = Path(script_path, "collector_cnf.json")
+        if not config_file.exists():
+            logger.warning("Config file does not exists, no emails will be sent.")
+            return
         smtp_config = {}
-        with open(Path(script_path, "collector_cnf.json"), "r") as f:
+        with open(config_file, "r") as f:
             smtp_config = json.load(f)
         context = ssl.create_default_context()
         msg = create_email(is_monday, failed_urls)
