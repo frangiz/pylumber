@@ -4,7 +4,6 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 import logging
 from pathlib import Path
-import os
 
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
@@ -18,7 +17,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     sentry_sdk.init(
-        dsn=os.environ.get('SENTRY_SDK_DSN'),
+        dsn=app.config['SENTRY_SDK_DSN'],
         integrations=[FlaskIntegration()],
 
         # Set traces_sample_rate to 1.0 to capture 100%
