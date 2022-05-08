@@ -67,3 +67,7 @@ def create_product(body: ProductCreateModel):
     db.session.commit()
 
     return jsonify({"msg": "ok"}), 200
+
+@bp.route('/debug-sentry')
+def trigger_error():
+    division_by_zero = 1 / 0

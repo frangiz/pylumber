@@ -8,3 +8,5 @@ flask-migrate
 Flask-Pydantic
 
 gunicorn
+sentry-sdk[flask]
+python-dotenv

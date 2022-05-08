@@ -33,3 +33,4 @@ logs/
 lumber_sources.json
 pylumber.db
 version.txt
+.flaskenv
