@@ -1,7 +1,6 @@
 # collects all prices and stores in db. Should be run nightly. 
 
 from datetime import datetime
-import json
 from pathlib import Path
 from typing import List
 
@@ -16,6 +15,7 @@ from datetime import timezone
 from common.price_fetcher import PriceFetcher
 
 from pydantic import BaseSettings
+import sentry_sdk
 
 
 class SMTPSettings(BaseSettings):
@@ -111,6 +111,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     settings = Settings()
+
+    sentry_sdk.init(
+        dsn=settings.sentry_sdk_dsn,
+        environment=settings.flask_env
+    )
 
     script_path = Path(__file__).parent.absolute()
     Path(script_path, "dumps").mkdir(exist_ok=True)
