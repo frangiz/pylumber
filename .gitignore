@@ -27,10 +27,8 @@ venv.bak/
 dev_files/
 access_tokens.txt
 app.pid
-collector_cnf.json
 dumps/
 logs/
-lumber_sources.json
 pylumber.db
 version.txt
 .flaskenv

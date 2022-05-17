@@ -15,21 +15,35 @@ import argparse
 from datetime import timezone
 from common.price_fetcher import PriceFetcher
 
-def notify_result(failed_urls: List[str]) -> None:
+from pydantic import BaseSettings
+
+
+class SMTPSettings(BaseSettings):
+    host: str = ""
+    port: int = 0
+    sender_email: str = ""
+    sender_password: str = ""
+    recipients: List[str] = []
+
+    class Config:
+        env_prefix='smtp_'
+
+
+class Settings(BaseSettings):
+    flask_env: str = "development"
+    sentry_sdk_dsn: str = ""
+    smtp: SMTPSettings = SMTPSettings()
+
+
+
+def notify_result(failed_urls: List[str], settings: SMTPSettings) -> None:
     is_monday = datetime.now().isoweekday() == 1
     if is_monday or failed_urls:
-        config_file = Path(script_path, "collector_cnf.json")
-        if not config_file.exists():
-            logger.warning("Config file does not exists, no emails will be sent.")
-            return
-        smtp_config = {}
-        with open(config_file, "r") as f:
-            smtp_config = json.load(f)
         context = ssl.create_default_context()
         msg = create_email(is_monday, failed_urls)
-        with smtplib.SMTP_SSL(smtp_config["SMTP_HOST"], smtp_config["SMTP_PORT"], context=context) as server:
-            server.login(smtp_config["SMTP_SENDER_EMAIL"], smtp_config["SMTP_SENDER_PASSWORD"])
-            server.sendmail(smtp_config["SMTP_SENDER_EMAIL"], smtp_config["SMTP_RECIPIENTS"], msg)
+        with smtplib.SMTP_SSL(settings.host, settings.port, context=context) as server:
+            server.login(settings.sender_email, settings.sender_password)
+            server.sendmail(settings.sender_email, settings.recipients, msg)
             server.quit()
             logger.debug(f"Sent email: {msg}")
 
@@ -66,7 +80,7 @@ def get_products():
     return products
 
 
-def collect(access_token, products):
+def collect(access_token, products, smtp_settings):
     failed_urls = []
     price_fetcher = PriceFetcher()
     for processed_products, (id, store, url) in enumerate(products, start=1):
@@ -82,7 +96,7 @@ def collect(access_token, products):
             failed_urls.append(url)
         print(f"Processed {processed_products}/{len(products)}")
 
-    notify_result(failed_urls)
+    notify_result(failed_urls, smtp_settings)
 
 
 if __name__ == '__main__':
@@ -95,6 +109,8 @@ if __name__ == '__main__':
         help="Collect only snapshots for this store.",
     )
     args = parser.parse_args()
+
+    settings = Settings()
 
     script_path = Path(__file__).parent.absolute()
     Path(script_path, "dumps").mkdir(exist_ok=True)
@@ -116,4 +132,4 @@ if __name__ == '__main__':
     products = get_products()
     if args.stores:
         products = list(filter(lambda p: p[1] in (args.stores), products))
-    collect(access_token, products)
+    collect(access_token, products, settings.smtp)
