@@ -24,6 +24,10 @@
 </style>
 
 <body>
+    <h2 style="text-align: center;">Products with recent changed prices</h2>
+    {{ macros.price_change_table(price_change_data) }}
+    <br><br><br>
+    <h1 style="text-align: center;">All products</h1>
     {% for group in groups %}
         <h2 style="text-align: center;">{{ group["group_name"] }}</h2>
         {{ macros.price_table(price_tables_data[group["group_name"]]) }}

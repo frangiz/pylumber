@@ -40,10 +40,7 @@ def get_price_change_color(date: str, price_change: str) -> str:
     if date is None or price_change == "---":
         return "black"
     if (datetime.utcnow() - parser.parse(date)).days <= 5:
-        if float(price_change.replace("kr", "")) > 0.0:
-            return "red"
-        else:
-            return "green"
+        return "red" if float(price_change.replace("kr", "")) > 0.0 else "green"
     return "black"
 
 
@@ -53,6 +50,7 @@ def index():
         version = f.readline().strip()
     all_prices = get_products_with_prices()
     price_tables_data = {}
+    price_change_data = []
     for group in all_prices:
         products = []
         for product in group["products"]:
@@ -66,6 +64,8 @@ def index():
                 'text_color': get_price_change_color(last_price_change["date"], last_price_change["change"])
             }
             products.append(data)
+            if data['text_color'] != 'black':
+                price_change_data.append({**{'group_name': group["group_name"]},**data})
         products.sort(key=lambda p: float(p["price"].replace(" kr", "")), reverse=True)
         price_tables_data[group["group_name"]] = products
-    return render_template("main.jinja2", groups=all_prices, price_tables_data=price_tables_data, version=version)
+    return render_template("main.jinja2", price_change_data=price_change_data, groups=all_prices, price_tables_data=price_tables_data, version=version)
