@@ -10,6 +10,10 @@ def get_products():
     entries.sort(key=lambda e: e.group_name)
 
     res = [{"group_name": k, "products": [e.to_dict_except(["group_name"]) for e in g]} for k, g in groupby(entries, attrgetter("group_name"))]
+    for group in res:
+        for source in group["products"]:
+            price_snapshot = PriceSnapshot.query.filter_by(product_id=source["id"]).order_by(PriceSnapshot.date.desc()).first()
+            source["prices"] = [price_snapshot.to_dict_except(["id", "product_id"])]
     return natsorted(res, key=lambda g: g["group_name"])
 
 

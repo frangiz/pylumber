@@ -71,7 +71,7 @@ def create_email(monday: bool, failed_urls: List[str]) -> str:
 
 def get_products():
     products = []
-    resp = requests.get(url="http://localhost:5000/api/products?prices=true")
+    resp = requests.get(url="http://localhost:5000/api/products")
     for group in resp.json():
         for product in group["products"]:
             last_price_snapshot = product["prices"][-1 ]["date"] if product["prices"] else None
