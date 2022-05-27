@@ -68,4 +68,6 @@ def index():
                 price_change_data.append({**{'group_name': group["group_name"]},**data})
         products.sort(key=lambda p: float(p["price"].replace(" kr", "")), reverse=True)
         price_tables_data[group["group_name"]] = products
+    
+    price_change_data.sort(key=lambda p: (p["date"], p["group_name"]), reverse=True)
     return render_template("main.jinja2", price_change_data=price_change_data, groups=all_prices, price_tables_data=price_tables_data, version=version)
