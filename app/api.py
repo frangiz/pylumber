@@ -24,13 +24,19 @@ def create_priced_product(id, body: PriceCreateModel):
     if PriceSnapshot.query.filter_by(product_id=product.id, date=body.date).first():
         current_app.logger.warning(f"Already got price snapshot {body}")
         abort(400)
+    
+    price = round(price_modifiers[product.price_modifier](body.price), 2)
+
+    product.price_updated_date = body.date
+    product.current_price = price
 
     ps = PriceSnapshot()
     ps.product_id = product.id
     ps.date = body.date
-    ps.price = round(price_modifiers[product.price_modifier](body.price), 2)
+    ps.price = price
 
     db.session.add(ps)
+    db.session.add(product)
     db.session.commit()
 
     return jsonify({**product.to_dict(), **ps.to_dict()}), 200
@@ -47,8 +53,7 @@ def get_products():
 @token_required
 @validate()
 def create_product(body: ProductCreateModel):
-    product = Product.query.filter_by(group_name=body.group_name, store=body.store).first()
-    if product:
+    if Product.query.filter_by(group_name=body.group_name, store=body.store).first():
         current_app.logger.warning(f"Product already exits {body}")
         abort(400)
     try:
@@ -59,7 +64,6 @@ def create_product(body: ProductCreateModel):
     p = Product()
     p.group_name = body.group_name
     p.store = body.store
-    p.description = ""  # Description need to be set until we have removed it from the db table.
     p.url = body.url
     p.price_modifier = body.price_modifier
 

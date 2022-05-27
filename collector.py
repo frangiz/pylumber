@@ -74,8 +74,7 @@ def get_products():
     resp = requests.get(url="http://localhost:5000/api/products")
     for group in resp.json():
         for product in group["products"]:
-            last_price_snapshot = product["prices"][-1 ]["date"] if product["prices"] else None
-            if last_price_snapshot != datetime.now(timezone.utc).date().isoformat():
+            if product["price_updated_date"] != datetime.now(timezone.utc).date().isoformat():
                 products.append((product["id"], product["store"], product["url"]))
     return products
 
