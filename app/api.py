@@ -35,6 +35,9 @@ def create_priced_product(id, body: PriceCreateModel):
     ps.date = body.date
     ps.price = price
 
+
+    ## TODO: Upgrade price trend table
+
     db.session.add(ps)
     db.session.add(product)
     db.session.commit()

@@ -18,7 +18,6 @@ class Product(db.Model):
     price_updated_date = db.Column(db.String(16), nullable=True)
     current_price = db.Column(db.Float, nullable=True)
 
-
 Product.to_dict = to_dict
 Product.to_dict_except = to_dict_except
 
@@ -31,3 +30,13 @@ class PriceSnapshot(db.Model):
 
 PriceSnapshot.to_dict = to_dict
 PriceSnapshot.to_dict_except = to_dict_except
+
+
+class PriceTrend(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.String(16), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+
+PriceTrend.to_dict = to_dict
+PriceTrend.to_dict_except = to_dict_except

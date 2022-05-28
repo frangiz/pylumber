@@ -1,4 +1,4 @@
-from app.services import get_products_with_prices
+from app.services import get_products_with_price_trends
 from flask import Blueprint, render_template
 from dateutil import parser
 from datetime import datetime
@@ -48,13 +48,13 @@ def get_price_change_color(date: str, price_change: str) -> str:
 def index():
     with open("version.txt", "r") as f:
         version = f.readline().strip()
-    all_prices = get_products_with_prices()
+    all_products = get_products_with_price_trends()
     price_tables_data = {}
     price_change_data = []
-    for group in all_prices:
+    for group in all_products:
         products = []
         for product in group["products"]:
-            last_price_change = get_last_price_change(product["prices"])
+            last_price_change = get_last_price_change(product["price_trends"])
             data = {
                 'store': product["store"],
                 'url': product["url"],
@@ -70,4 +70,4 @@ def index():
         price_tables_data[group["group_name"]] = products
     
     price_change_data.sort(key=lambda p: (p["date"], p["group_name"]), reverse=True)
-    return render_template("main.jinja2", price_change_data=price_change_data, groups=all_prices, price_tables_data=price_tables_data, version=version)
+    return render_template("main.jinja2", price_change_data=price_change_data, groups=all_products, price_tables_data=price_tables_data, version=version)
