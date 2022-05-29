@@ -35,8 +35,6 @@ def create_priced_product(id, body: PriceCreateModel):
     ps.date = body.date
     ps.price = price
 
-
-    ## TODO: Upgrade price trend table, not sure if correct logic...
     price_trends = PriceTrend.query.filter_by(product_id=product.id).all()
     if len(price_trends) < 2:
         db.session.add(PriceTrend(product_id=product.id, date=body.date, price=price))
