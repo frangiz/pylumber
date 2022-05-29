@@ -54,7 +54,7 @@ def create_priced_product(id, body: PriceCreateModel):
 @bp.route("/products", methods=["GET"])
 def get_products():
     if request.args.get("prices", False):
-        return jsonify(services.get_products_with_prices()), 200
+        return jsonify(services.get_products_with_price_trends()), 200
     return jsonify(services.get_products()), 200
 
 
