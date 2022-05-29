@@ -86,8 +86,8 @@
                         backgroundColor: colorMapping['{{ product['store'] }}'],
                         borderColor: colorMapping['{{ product['store'] }}'],
                         data: [
-                            {% for price_snapshop in product["prices"] %}
-                                { t:'{{ price_snapshop["date"] }}', y:{{ price_snapshop["price"] }} },
+                            {% for price_trend in product["price_trends"] %}
+                                { t:'{{ price_trend["date"] }}', y:{{ price_trend["price"] }} },
                             {% endfor %}
                         ],
                         fill: false

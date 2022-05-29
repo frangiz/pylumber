@@ -1,7 +1,6 @@
-from app.models import Product, PriceSnapshot
+from app.models import Product, PriceTrend
 from itertools import groupby
 from operator import attrgetter
-from typing import List
 from natsort import natsorted
 
 
@@ -13,23 +12,10 @@ def get_products():
     return natsorted(res, key=lambda g: g["group_name"])
 
 
-def filter_repeating_values(values: PriceSnapshot) -> List[PriceSnapshot]:
-    '''Removes duplicated values (checking the price), but keeping the first and last in the group.'''
-    res = []
-    for _, g in groupby(values, attrgetter("price")):
-        group = list(g)
-        res.append(group[0])
-        if group[0].date != group[-1].date:
-            res.append(group[-1])
-    return res
-
-
-def get_products_with_prices():
+def get_products_with_price_trends():
     res = get_products()
     for group in res:
         for source in group["products"]:
-            price_snapshots = PriceSnapshot.query.filter_by(product_id=source["id"]).all()
-            price_snapshots = filter_repeating_values(price_snapshots)
-            source["prices"] = [ps.to_dict_except(["id", "product_id"]) for ps in price_snapshots]
-
+            price_trends = PriceTrend.query.filter_by(product_id=source["id"]).all()
+            source["price_trends"] = [pt.to_dict_except(["id", "product_id"]) for pt in price_trends]
     return res

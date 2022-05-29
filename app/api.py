@@ -1,7 +1,7 @@
 from flask import Blueprint, request, current_app, abort
 from flask.json import jsonify
 from app import db
-from app.models import Product, PriceSnapshot
+from app.models import PriceTrend, Product, PriceSnapshot
 import app.services as services
 from app.resources import PriceCreateModel, ProductCreateModel, price_modifiers
 
@@ -34,6 +34,15 @@ def create_priced_product(id, body: PriceCreateModel):
     ps.product_id = product.id
     ps.date = body.date
     ps.price = price
+
+    price_trends = PriceTrend.query.filter_by(product_id=product.id).all()
+    if len(price_trends) < 2:
+        db.session.add(PriceTrend(product_id=product.id, date=body.date, price=price))
+    elif price_trends[-2].price == price and price_trends[-1].price == price:
+        price_trends[-1].date = body.date
+        db.session.add(price_trends[-1])
+    else:
+        db.session.add(PriceTrend(product_id=product.id, date=body.date, price=price))
 
     db.session.add(ps)
     db.session.add(product)
