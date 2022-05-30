@@ -3,13 +3,13 @@ from flask import url_for
 
 from app import create_app, db
 from app.resources import ProductCreateModel
-from config import Config
+from config import Config, basedir
 from pathlib import Path
 
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///test_pylumber.db"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///" + str(Path(basedir, "test_pylumber.db"))
     SENTRY_SDK_DSN = None
     ACCESS_TOKENS_FILENAME = "test_access_tokens.txt"
 
@@ -28,6 +28,7 @@ def setup_module(module):
 
 def teardown_module(module):
     Path(TestConfig.ACCESS_TOKENS_FILENAME).unlink()
+    Path(basedir, "test_pylumber.db").unlink()
 
 
 def setup_function(function):
