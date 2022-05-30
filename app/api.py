@@ -7,7 +7,7 @@ from app.resources import PriceCreateModel, ProductCreateModel, price_modifiers
 
 from flask_pydantic import validate
 from app.auth import token_required
-from common.price_fetcher import PriceFetcher
+from app import price_fetcher
 
 
 bp = Blueprint("api", __name__)
@@ -66,7 +66,7 @@ def create_product(body: ProductCreateModel):
         current_app.logger.warning(f"Product already exits {body}")
         abort(400)
     try:
-        PriceFetcher().get_price(body.store, body.url)
+        price_fetcher.get_price(body.store, body.url)
     except Exception:
         current_app.logger.warning(f"Unable to find price for url {body.url}")
         abort(400)
