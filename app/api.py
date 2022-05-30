@@ -48,7 +48,7 @@ def create_priced_product(id, body: PriceCreateModel):
     db.session.add(product)
     db.session.commit()
 
-    return jsonify({**product.to_dict(), **ps.to_dict()}), 200
+    return jsonify({**product.to_dict(), **ps.to_dict()}), 201
 
 
 @bp.route("/products", methods=["GET"])
@@ -79,4 +79,4 @@ def create_product(body: ProductCreateModel):
     db.session.add(p)
     db.session.commit()
 
-    return jsonify({"msg": "ok"}), 200
+    return jsonify({"msg": "ok"}), 201

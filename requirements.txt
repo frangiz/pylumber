@@ -1,6 +1,7 @@
 requests
 beautifulsoup4
 natsort
+python-dateutil
 
 flask
 flask-sqlalchemy
@@ -11,3 +12,6 @@ gunicorn
 sentry-sdk[flask]
 python-dotenv
 pydantic
+
+pytest
+pytest-flask
