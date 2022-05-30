@@ -11,3 +11,5 @@ class Config(object):
     FLASK_ENV = os.environ.get('FLASK_ENV')
 
     SENTRY_SDK_DSN = os.environ.get('SENTRY_SDK_DSN')
+
+    ACCESS_TOKENS_FILENAME = "access_tokens.txt"

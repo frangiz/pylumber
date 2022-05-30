@@ -8,8 +8,11 @@ from pathlib import Path
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
+from common.price_fetcher import PriceFetcher
+
 db = SQLAlchemy()
 migrate = Migrate()
+price_fetcher = PriceFetcher()
 
 
 def create_app(config_class=Config):

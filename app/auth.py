@@ -1,12 +1,12 @@
 from functools import wraps, lru_cache
-from flask import request, abort
+from flask import request, abort, current_app
 
 
 @lru_cache
 def is_token_valid(token: str) -> bool:
     if not token.strip():
         return False
-    with open('access_tokens.txt') as f:
+    with open(current_app.config["ACCESS_TOKENS_FILENAME"]) as f:
         allowed_tokens = {t.strip() for t in f.readlines()}
     return token in allowed_tokens
 
