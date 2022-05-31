@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
 
-import requests
+import requests  # type: ignore
 import sentry_sdk
 from pydantic import BaseSettings
 

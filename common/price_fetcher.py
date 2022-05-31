@@ -1,9 +1,8 @@
 import json
 from pathlib import Path
-from typing import Dict
 from urllib.parse import quote
 
-import requests
+import requests  # type: ignore
 from bs4 import BeautifulSoup
 
 
@@ -23,7 +22,7 @@ class PriceFetcher:
 
         return resp.text
 
-    def get_optimera_price(self, url: str) -> Dict[str, str]:
+    def get_optimera_price(self, url: str) -> float:
         content = self.get_url_content(url)
         marker = r"'products':["
         start = content.index(marker)
@@ -31,7 +30,7 @@ class PriceFetcher:
         product = json.loads(content[start + len(marker) : end + 1].replace("'", '"'))
         return float(product["price"])
 
-    def get_woody_price(self, url: str) -> Dict[str, str]:
+    def get_woody_price(self, url: str) -> float:
         content = self.get_url_content(url)
         soup = BeautifulSoup(content, "html.parser")
 
@@ -40,15 +39,15 @@ class PriceFetcher:
         )
         headers = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"}
         data = {"ProductId": [], "partnersku": [str(id).replace(" ", "+")]}
-        data = json.dumps(data).replace(" ", "")
-        data = "products=" + quote(data).replace("%2B", "+")
+        data_str = json.dumps(data).replace(" ", "")
+        data_str = "products=" + quote(data_str).replace("%2B", "+")
         api_url = "https://fellessonsbygghandel.woody.se/api/externalprice/priceinfos"
-        res = requests.post(api_url, data=data, headers=headers)
+        res = requests.post(api_url, data=data_str, headers=headers)
         return float(
             res.json()["partnerskus"][0]["Price"].replace(",", ".").replace("\xa0", "")
         )
 
-    def get_byggmax_price(self, url: str) -> Dict[str, str]:
+    def get_byggmax_price(self, url: str) -> float:
         content = self.get_url_content(url)
         soup = BeautifulSoup(content, "html.parser")
 

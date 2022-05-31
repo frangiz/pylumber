@@ -10,7 +10,7 @@ def to_dict_except(self, exclusions):
     return {k: v for k, v in all_attrs.items() if k not in exclusions}
 
 
-class Product(db.Model):
+class Product(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     group_name = db.Column(db.String(64), nullable=False)
     store = db.Column(db.String(64), nullable=False)
@@ -24,7 +24,7 @@ Product.to_dict = to_dict
 Product.to_dict_except = to_dict_except
 
 
-class PriceSnapshot(db.Model):
+class PriceSnapshot(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, nullable=False)
     date = db.Column(db.String(16), nullable=False)
@@ -35,7 +35,7 @@ PriceSnapshot.to_dict = to_dict
 PriceSnapshot.to_dict_except = to_dict_except
 
 
-class PriceTrend(db.Model):
+class PriceTrend(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, nullable=False)
     date = db.Column(db.String(16), nullable=False)

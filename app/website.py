@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from dateutil import parser
+from dateutil import parser  # type: ignore
 from flask import Blueprint, render_template
 
 from app.services import get_products_with_price_trends
