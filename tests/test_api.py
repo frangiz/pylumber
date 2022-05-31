@@ -1,10 +1,11 @@
+from pathlib import Path
+
 import pytest
 from flask import url_for
 
 from app import create_app, db
 from app.resources import ProductCreateModel
 from config import Config, basedir
-from pathlib import Path
 
 
 class TestConfig(Config):

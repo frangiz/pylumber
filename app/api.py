@@ -1,14 +1,12 @@
-from flask import Blueprint, request, current_app, abort
+from flask import Blueprint, abort, current_app, request
 from flask.json import jsonify
-from app import db
-from app.models import PriceTrend, Product, PriceSnapshot
-import app.services as services
-from app.resources import PriceCreateModel, ProductCreateModel, price_modifiers
-
 from flask_pydantic import validate
-from app.auth import token_required
-from app import price_fetcher
 
+import app.services as services
+from app import db, price_fetcher
+from app.auth import token_required
+from app.models import PriceSnapshot, PriceTrend, Product
+from app.resources import PriceCreateModel, ProductCreateModel, price_modifiers
 
 bp = Blueprint("api", __name__)
 

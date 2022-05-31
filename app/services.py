@@ -1,7 +1,9 @@
-from app.models import Product, PriceTrend
 from itertools import groupby
 from operator import attrgetter
+
 from natsort import natsorted
+
+from app.models import PriceTrend, Product
 
 
 def get_products():

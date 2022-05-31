@@ -1,21 +1,20 @@
 # collects all prices and stores in db. Should be run nightly.
 
-from datetime import datetime
+import argparse
+import logging
+import smtplib
+import ssl
+import traceback
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
 
 import requests
-import logging
-import traceback
-import ssl
-import smtplib
-from app.resources import PriceCreateModel
-import argparse
-from datetime import timezone
-from common.price_fetcher import PriceFetcher
-
-from pydantic import BaseSettings
 import sentry_sdk
+from pydantic import BaseSettings
+
+from app.resources import PriceCreateModel
+from common.price_fetcher import PriceFetcher
 
 
 class SMTPSettings(BaseSettings):

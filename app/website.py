@@ -1,7 +1,9 @@
-from app.services import get_products_with_price_trends
-from flask import Blueprint, render_template
-from dateutil import parser
 from datetime import datetime
+
+from dateutil import parser
+from flask import Blueprint, render_template
+
+from app.services import get_products_with_price_trends
 
 bp = Blueprint("website", __name__)
 

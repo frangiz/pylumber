@@ -1,5 +1,6 @@
-from functools import wraps, lru_cache
-from flask import request, abort, current_app
+from functools import lru_cache, wraps
+
+from flask import abort, current_app, request
 
 
 @lru_cache

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, validator
 from datetime import datetime
+
+from pydantic import BaseModel, validator
 
 
 class PriceCreateModel(BaseModel):

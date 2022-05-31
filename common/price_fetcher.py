@@ -1,9 +1,10 @@
-from bs4 import BeautifulSoup
-from urllib.parse import quote
-import requests
+import json
 from pathlib import Path
 from typing import Dict
-import json
+from urllib.parse import quote
+
+import requests
+from bs4 import BeautifulSoup
 
 
 class PriceFetcher:

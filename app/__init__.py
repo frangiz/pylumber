@@ -1,14 +1,14 @@
-from config import Config
-from flask import Flask
-from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 import logging
 from pathlib import Path
 
 import sentry_sdk
+from flask import Flask
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 from common.price_fetcher import PriceFetcher
+from config import Config
 
 db = SQLAlchemy()
 migrate = Migrate()
