@@ -29,4 +29,4 @@ jobs:
         python -m pip install --upgrade pre-commit
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run pre-commit
-      run: pre-commit run --verbose --all-files --show-diff-on-failure black
+      run: pre-commit run --verbose --all-files --show-diff-on-failure

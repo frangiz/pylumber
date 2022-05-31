@@ -4,9 +4,9 @@ natsort
 python-dateutil
 
 flask
-flask-sqlalchemy
 flask-migrate
 Flask-Pydantic
+flask-sqlalchemy
 
 gunicorn
 sentry-sdk[flask]
@@ -14,6 +14,7 @@ python-dotenv
 pydantic
 
 pytest
+pytest-cov
 pytest-flask
 pytest-mock
 
