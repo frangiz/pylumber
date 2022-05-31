@@ -18,4 +18,5 @@ def token_required(f):
         if not is_token_valid(token):
             abort(404)
         return f(*args, **kwargs)
+
     return wrap

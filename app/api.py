@@ -19,12 +19,14 @@ bp = Blueprint("api", __name__)
 def create_priced_product(id, body: PriceCreateModel):
     product = Product.query.filter_by(id=id).first()
     if not product:
-        current_app.logger.warning(f"Could not find product with id {id} and add the body {body}")
+        current_app.logger.warning(
+            f"Could not find product with id {id} and add the body {body}"
+        )
         abort(400)
     if PriceSnapshot.query.filter_by(product_id=product.id, date=body.date).first():
         current_app.logger.warning(f"Already got price snapshot {body}")
         abort(400)
-    
+
     price = round(price_modifiers[product.price_modifier](body.price), 2)
 
     product.price_updated_date = body.date

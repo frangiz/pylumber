@@ -16,3 +16,5 @@ pydantic
 pytest
 pytest-flask
 pytest-mock
+
+pre-commit
