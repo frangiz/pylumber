@@ -1,7 +1,9 @@
-from app.services import get_products_with_price_trends
-from flask import Blueprint, render_template
-from dateutil import parser
 from datetime import datetime
+
+from dateutil import parser  # type: ignore
+from flask import Blueprint, render_template
+
+from app.services import get_products_with_price_trends
 
 bp = Blueprint("website", __name__)
 
@@ -13,15 +15,11 @@ def float_to_kr_str(value: float) -> str:
 
 def get_last_price_change(prices):
     if len(prices) == 0:
-        return {
-            "date": None,
-            "price": 0.0,
-            "change": "---"
-        }
+        return {"date": None, "price": 0.0, "change": "---"}
     price_change = {
         "date": prices[0]["date"],
         "price": prices[0]["price"],
-        "change": "---"
+        "change": "---",
     }
     if len(prices) == 1:
         return price_change
@@ -31,7 +29,9 @@ def get_last_price_change(prices):
         if current_snapshot["price"] != prev_snapshot["price"]:
             price_change["date"] = current_snapshot["date"]
             price_change["price"] = current_snapshot["price"]
-            price_change["change"] = float_to_kr_str(current_snapshot["price"] - prev_snapshot["price"])
+            price_change["change"] = float_to_kr_str(
+                current_snapshot["price"] - prev_snapshot["price"]
+            )
             return price_change
     return price_change
 
@@ -56,18 +56,28 @@ def index():
         for product in group["products"]:
             last_price_change = get_last_price_change(product["price_trends"])
             data = {
-                'store': product["store"],
-                'url': product["url"],
-                'date': last_price_change["date"],
-                'price': float_to_kr_str(last_price_change["price"])[1:],
-                'price_changed': last_price_change["change"],
-                'text_color': get_price_change_color(last_price_change["date"], last_price_change["change"])
+                "store": product["store"],
+                "url": product["url"],
+                "date": last_price_change["date"],
+                "price": float_to_kr_str(last_price_change["price"])[1:],
+                "price_changed": last_price_change["change"],
+                "text_color": get_price_change_color(
+                    last_price_change["date"], last_price_change["change"]
+                ),
             }
             products.append(data)
-            if data['text_color'] != 'black':
-                price_change_data.append({**{'group_name': group["group_name"]},**data})
+            if data["text_color"] != "black":
+                price_change_data.append(
+                    {**{"group_name": group["group_name"]}, **data}
+                )
         products.sort(key=lambda p: float(p["price"].replace(" kr", "")), reverse=True)
         price_tables_data[group["group_name"]] = products
-    
+
     price_change_data.sort(key=lambda p: (p["date"], p["group_name"]), reverse=True)
-    return render_template("main.jinja2", price_change_data=price_change_data, groups=all_products, price_tables_data=price_tables_data, version=version)
+    return render_template(
+        "main.jinja2",
+        price_change_data=price_change_data,
+        groups=all_products,
+        price_tables_data=price_tables_data,
+        version=version,
+    )

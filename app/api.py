@@ -1,14 +1,12 @@
-from flask import Blueprint, request, current_app, abort
+from flask import Blueprint, abort, current_app, request
 from flask.json import jsonify
-from app import db
-from app.models import PriceTrend, Product, PriceSnapshot
-import app.services as services
-from app.resources import PriceCreateModel, ProductCreateModel, price_modifiers
-
 from flask_pydantic import validate
-from app.auth import token_required
-from app import price_fetcher
 
+import app.services as services
+from app import db, price_fetcher
+from app.auth import token_required
+from app.models import PriceSnapshot, PriceTrend, Product
+from app.resources import PriceCreateModel, ProductCreateModel, price_modifiers
 
 bp = Blueprint("api", __name__)
 
@@ -19,12 +17,14 @@ bp = Blueprint("api", __name__)
 def create_priced_product(id, body: PriceCreateModel):
     product = Product.query.filter_by(id=id).first()
     if not product:
-        current_app.logger.warning(f"Could not find product with id {id} and add the body {body}")
+        current_app.logger.warning(
+            f"Could not find product with id {id} and add the body {body}"
+        )
         abort(400)
     if PriceSnapshot.query.filter_by(product_id=product.id, date=body.date).first():
         current_app.logger.warning(f"Already got price snapshot {body}")
         abort(400)
-    
+
     price = round(price_modifiers[product.price_modifier](body.price), 2)
 
     product.price_updated_date = body.date
