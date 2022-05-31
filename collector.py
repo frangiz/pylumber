@@ -66,7 +66,7 @@ def create_email(monday: bool, failed_urls: List[str]) -> str:
         This message was generated {}
         Yours sincerely,
         pylumber
-        """.format(
+        """.format(  # noqa: E501
         ", ".join(failed_urls), datetime.now()
     )
 

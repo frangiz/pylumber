@@ -23,7 +23,10 @@ depends_on = None
 
 
 def filter_repeating_values(values: PriceSnapshot) -> List[PriceSnapshot]:
-    """Removes duplicated values (checking the price), but keeping the first and last in the group."""
+    """
+    Removes duplicated values (checking the price), but keeping the first
+    and last in the group.
+    """
     res = []
     for _, g in groupby(values, attrgetter("price")):
         group = list(g)

@@ -1,7 +1,7 @@
 """Second version of the database structure.
 
 Revision ID: 2f35e0b2052b
-Revises: 
+Revises:
 Create Date: 2021-10-20 10:29:45.343726
 
 """
