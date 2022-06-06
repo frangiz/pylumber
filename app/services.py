@@ -7,8 +7,7 @@ from app.models import PriceTrend, Product
 
 
 def get_products():
-    entries = Product.query.all()
-    entries.sort(key=lambda e: e.group_name)
+    entries = Product.query.order_by(Product.group_name, Product.current_price).all()
 
     res = [
         {"group_name": k, "products": [e.to_dict_except(["group_name"]) for e in g]}

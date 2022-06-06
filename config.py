@@ -15,3 +15,5 @@ class Config(object):
     SENTRY_SDK_DSN = os.environ.get("SENTRY_SDK_DSN")
 
     ACCESS_TOKENS_FILENAME = "access_tokens.txt"
+
+    SQLALCHEMY_ECHO=True
