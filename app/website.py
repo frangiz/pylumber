@@ -49,7 +49,7 @@ def index():
     with open("version.txt", "r") as f:
         version = f.readline().strip()
     all_products = get_products_with_price_trends()
-    price_tables_data = {}
+    price_table_data = {}
     price_change_data = []
     for group in all_products:
         products = []
@@ -71,13 +71,12 @@ def index():
                     {**{"group_name": group["group_name"]}, **data}
                 )
         products.sort(key=lambda p: float(p["price"].replace(" kr", "")), reverse=True)
-        price_tables_data[group["group_name"]] = products
+        price_table_data[group["group_name"]] = products
 
     price_change_data.sort(key=lambda p: (p["date"], p["group_name"]), reverse=True)
     return render_template(
         "main.jinja2",
         price_change_data=price_change_data,
-        groups=all_products,
-        price_tables_data=price_tables_data,
+        price_table_data=price_table_data,
         version=version,
     )

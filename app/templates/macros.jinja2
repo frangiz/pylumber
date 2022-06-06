@@ -33,7 +33,7 @@
 </div>
 {% endmacro %}}
 
-{% macro price_table(data) %}
+{% macro price_table(price_table_data) %}
 <div class="row">
     <div class="col-md-3"></div>
     <div class="col-md-6">
@@ -42,6 +42,7 @@
                 <table class="table table-sm">
                     <thead>
                         <tr>
+                            <th>Product</th>
                             <th>Store</th>
                             <th>Date</th>
                             <th>Price</th>
@@ -49,13 +50,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in data %}
-                        <tr>
-                            <td><a href="{{ row["url"] }}" target="_blank">{{ row["store"] }}</a></td>
-                            <td>{{ row["date"] }}</td>
-                            <td>{{ row["price"] }}</td>
-                            <td style='color: {{ row["text_color"] }};''>{{ row["price_changed"] }}</td>
-                        </tr>
+                        {% for group_name, products in price_table_data.items() %}
+                            {% for row in products %}
+                            <tr>
+                                <td>{{ group_name }}</td>
+                                <td><a href="{{ row["url"] }}" target="_blank">{{ row["store"] }}</a></td>
+                                <td>{{ row["date"] }}</td>
+                                <td>{{ row["price"] }}</td>
+                                <td style='color: {{ row["text_color"] }};''>{{ row["price_changed"] }}</td>
+                            </tr>
+                            {% endfor %}
                         {% endfor %}
                     </tbody>
                 </table>

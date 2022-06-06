@@ -29,17 +29,6 @@
     {{ macros.price_change_table(price_change_data) }}
     <br><br><br>
     <h1 style="text-align: center;">All products</h1>
-    {% for group in groups %}
-        <h2 style="text-align: center;">{{ group["group_name"] }}</h2>
-        {{ macros.price_table(price_tables_data[group["group_name"]]) }}
-        <div class="row">
-            <div class="col-md-3"></div>
-            <div class="col-md-6">
-                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#chart_container_{{ loop.index }}" aria-expanded="false" aria-controls="chart_container_{{ loop.index }}">Show graph</button>
-            </div>
-            <div class="col-md-3"></div>
-        </div>
-        {{ macros.draw_price_graph(loop.index, group) }}
-    {% endfor %}
+    {{ macros.price_table(price_table_data) }}
     <p style="text-align: center;">Version: {{ version }}</p>
 </body>
