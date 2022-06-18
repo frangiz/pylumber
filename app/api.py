@@ -53,7 +53,7 @@ def create_priced_product(id, body: PriceCreateModel):
 
 @bp.route("/products", methods=["GET"])
 def get_products():
-    return jsonify(services.get_products()), 200
+    return jsonify([p.dict() for p in services.get_products()]), 200
 
 
 @bp.route("/products", methods=["POST"])

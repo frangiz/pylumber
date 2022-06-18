@@ -1,6 +1,10 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from pydantic import BaseModel, validator
+
+from typing import List
+
+from app.models import PriceTrend, Product
 
 
 class PriceCreateModel(BaseModel):
@@ -31,3 +35,39 @@ class ProductCreateModel(BaseModel):
         if value in price_modifiers:
             return value
         raise ValueError("Modifier not known")
+
+
+class PriceTrendResponseModel(BaseModel):
+    date: str
+    price: float
+
+    @staticmethod
+    def from_db_price_trend(trend: PriceTrend) -> "PriceTrendResponseModel":
+        return PriceTrendResponseModel(date = trend.date, price=trend.price)
+
+
+class ProductResponseModel(BaseModel):
+    current_price: float
+    id: int
+    price_modifier: str
+    price_trends: List[PriceTrendResponseModel]
+    price_updated_date: date
+    store: str
+    url: str
+
+    @staticmethod
+    def from_db_product(product: Product) -> "ProductResponseModel":
+        return ProductResponseModel(
+            current_price=product.current_price,
+            id=product.id,
+            price_modifier=product.price_modifier,
+            price_trends=[PriceTrendResponseModel.from_db_price_trend(pt) for pt in product.price_trends],
+            price_updated_date=product.price_updated_date,
+            store = product.store,
+            url = product.store
+        )
+
+
+class ProductGroupResponseModel(BaseModel):
+    group_name: str
+    products: List[ProductResponseModel]
