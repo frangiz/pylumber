@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import date, datetime, time
 
 from flask import Blueprint, render_template
 
@@ -35,7 +35,7 @@ def get_last_price_change(prices):
     return price_change
 
 
-def get_price_change_color(date: str, price_change: str) -> str:
+def get_price_change_color(date: date, price_change: str) -> str:
     if date is None or price_change == "---":
         return "black"
     if (datetime.utcnow() - datetime.combine(date, time())).days <= 5:
