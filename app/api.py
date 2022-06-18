@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, current_app, request
+from flask import Blueprint, abort, current_app
 from flask.json import jsonify
 from flask_pydantic import validate
 
@@ -53,8 +53,6 @@ def create_priced_product(id, body: PriceCreateModel):
 
 @bp.route("/products", methods=["GET"])
 def get_products():
-    if request.args.get("prices", False):
-        return jsonify(services.get_products_with_price_trends()), 200
     return jsonify(services.get_products()), 200
 
 

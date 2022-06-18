@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil import parser  # type: ignore
 from flask import Blueprint, render_template
 
-from app.services import get_products_with_price_trends
+from app.services import get_products
 
 bp = Blueprint("website", __name__)
 
@@ -48,7 +48,7 @@ def get_price_change_color(date: str, price_change: str) -> str:
 def index():
     with open("version.txt", "r") as f:
         version = f.readline().strip()
-    all_products = get_products_with_price_trends()
+    all_products = get_products()
     price_table_data = {}
     price_change_data = []
     for group in all_products:

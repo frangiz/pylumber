@@ -16,4 +16,4 @@ class Config(object):
 
     ACCESS_TOKENS_FILENAME = "access_tokens.txt"
 
-    SQLALCHEMY_ECHO=True
+    SQLALCHEMY_ECHO = False

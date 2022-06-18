@@ -48,7 +48,7 @@ def create_app(config_class=Config):
         app.logger.addHandler(handler)
 
     db.init_app(app)
-    migrate.init_app(app, db)
+    migrate.init_app(app, db, render_as_batch=True)
 
     from app.website import bp as website_bp
 
