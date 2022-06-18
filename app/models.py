@@ -1,3 +1,8 @@
+import sqlalchemy.orm
+from sqlalchemy import ForeignKey
+from sqlalchemy.inspection import inspect
+from sqlalchemy.orm import relationship
+
 from app import db
 
 
@@ -7,6 +12,11 @@ def to_dict(self):
 
 def to_dict_except(self, exclusions):
     all_attrs = {c.name: getattr(self, c.name, None) for c in self.__table__.columns}
+    relationship_names = [n for n, _ in inspect(self.__class__).relationships.items()]
+    for rel in relationship_names:
+        val = getattr(self, rel, None)
+        if type(val) == sqlalchemy.orm.collections.InstrumentedList:
+            all_attrs[rel] = [v.to_dict() for v in val]
     return {k: v for k, v in all_attrs.items() if k not in exclusions}
 
 
@@ -18,6 +28,7 @@ class Product(db.Model):  # type: ignore
     price_modifier = db.Column(db.String(64), nullable=False)
     price_updated_date = db.Column(db.String(16), nullable=True)
     current_price = db.Column(db.Float, nullable=True)
+    price_trends = relationship("PriceTrend", lazy="joined")
 
 
 Product.to_dict = to_dict
@@ -37,7 +48,7 @@ PriceSnapshot.to_dict_except = to_dict_except
 
 class PriceTrend(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, nullable=False)
+    product_id = db.Column(db.Integer, ForeignKey("product.id"), nullable=False)
     date = db.Column(db.String(16), nullable=False)
     price = db.Column(db.Float, nullable=False)
 

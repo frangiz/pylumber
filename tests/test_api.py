@@ -69,6 +69,7 @@ def test_can_crate_basic_product(client, mocker):
                     "current_price": None,
                     "id": 1,
                     "price_modifier": "none",
+                    "price_trends": [],
                     "price_updated_date": None,
                     "store": "the_store",
                     "url": "some_url",
