@@ -7,6 +7,15 @@ from typing import List
 from app.models import PriceTrend, Product
 
 
+class PydanticDictIsoFormat(BaseModel):
+    def dict(self, **kwargs):
+        output = super().dict(**kwargs)
+        for k,v in output.items():
+            if isinstance(v, date):
+                output[k] = v.isoformat()
+        return output
+
+
 class PriceCreateModel(BaseModel):
     price: float
     date: str
@@ -37,8 +46,8 @@ class ProductCreateModel(BaseModel):
         raise ValueError("Modifier not known")
 
 
-class PriceTrendResponseModel(BaseModel):
-    date: str
+class PriceTrendResponseModel(PydanticDictIsoFormat):
+    date: date
     price: float
 
     @staticmethod
@@ -46,7 +55,7 @@ class PriceTrendResponseModel(BaseModel):
         return PriceTrendResponseModel(date = trend.date, price=trend.price)
 
 
-class ProductResponseModel(BaseModel):
+class ProductResponseModel(PydanticDictIsoFormat):
     current_price: float
     id: int
     price_modifier: str
@@ -64,7 +73,7 @@ class ProductResponseModel(BaseModel):
             price_trends=[PriceTrendResponseModel.from_db_price_trend(pt) for pt in product.price_trends],
             price_updated_date=product.price_updated_date,
             store = product.store,
-            url = product.store
+            url = product.url
         )
 
 

@@ -6,7 +6,7 @@ import app.services as services
 from app import db, price_fetcher
 from app.auth import token_required
 from app.models import PriceSnapshot, PriceTrend, Product
-from app.resources import PriceCreateModel, ProductCreateModel, price_modifiers
+from app.resources import PriceCreateModel, ProductCreateModel, ProductResponseModel, price_modifiers
 
 bp = Blueprint("api", __name__)
 
@@ -48,7 +48,7 @@ def create_priced_product(id, body: PriceCreateModel):
     db.session.add(product)
     db.session.commit()
 
-    return jsonify({**product.to_dict(), **ps.to_dict()}), 201
+    return jsonify(ProductResponseModel.from_db_product(product).dict()), 201
 
 
 @bp.route("/products", methods=["GET"])
