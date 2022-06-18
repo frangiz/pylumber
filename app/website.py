@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import datetime, time
 
-from dateutil import parser  # type: ignore
 from flask import Blueprint, render_template
 
 from app.services import get_products
@@ -39,7 +38,7 @@ def get_last_price_change(prices):
 def get_price_change_color(date: str, price_change: str) -> str:
     if date is None or price_change == "---":
         return "black"
-    if (datetime.utcnow() - parser.parse(date)).days <= 5:
+    if (datetime.utcnow() - datetime.combine(date, time())).days <= 5:
         return "red" if float(price_change.replace("kr", "")) > 0.0 else "green"
     return "black"
 
