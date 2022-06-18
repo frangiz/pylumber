@@ -17,8 +17,8 @@ def get_last_price_change(prices):
     if len(prices) == 0:
         return {"date": None, "price": 0.0, "change": "---"}
     price_change = {
-        "date": prices[0]["date"],
-        "price": prices[0]["price"],
+        "date": prices[0].date,
+        "price": prices[0].price,
         "change": "---",
     }
     if len(prices) == 1:
@@ -26,11 +26,11 @@ def get_last_price_change(prices):
     for i in range(len(prices) - 1, 0, -1):
         current_snapshot = prices[i]
         prev_snapshot = prices[i - 1]
-        if current_snapshot["price"] != prev_snapshot["price"]:
-            price_change["date"] = current_snapshot["date"]
-            price_change["price"] = current_snapshot["price"]
+        if current_snapshot.price != prev_snapshot.price:
+            price_change["date"] = current_snapshot.date
+            price_change["price"] = current_snapshot.price
             price_change["change"] = float_to_kr_str(
-                current_snapshot["price"] - prev_snapshot["price"]
+                current_snapshot.price - prev_snapshot.price
             )
             return price_change
     return price_change
@@ -53,11 +53,11 @@ def index():
     price_change_data = []
     for group in all_products:
         products = []
-        for product in group["products"]:
-            last_price_change = get_last_price_change(product["price_trends"])
+        for product in group.products:
+            last_price_change = get_last_price_change(product.price_trends)
             data = {
-                "store": product["store"],
-                "url": product["url"],
+                "store": product.store,
+                "url": product.url,
                 "date": last_price_change["date"],
                 "price": float_to_kr_str(last_price_change["price"])[1:],
                 "price_changed": last_price_change["change"],
@@ -68,10 +68,10 @@ def index():
             products.append(data)
             if data["text_color"] != "black":
                 price_change_data.append(
-                    {**{"group_name": group["group_name"]}, **data}
+                    {**{"group_name": group.group_name}, **data}
                 )
         products.sort(key=lambda p: float(p["price"].replace(" kr", "")), reverse=True)
-        price_table_data[group["group_name"]] = products
+        price_table_data[group.group_name] = products
 
     price_change_data.sort(key=lambda p: (p["date"], p["group_name"]), reverse=True)
     return render_template(
