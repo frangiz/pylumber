@@ -67,9 +67,7 @@ def index():
             }
             products.append(data)
             if data["text_color"] != "black":
-                price_change_data.append(
-                    {**{"group_name": group.group_name}, **data}
-                )
+                price_change_data.append({**{"group_name": group.group_name}, **data})
         products.sort(key=lambda p: float(p["price"].replace(" kr", "")), reverse=True)
         price_table_data[group.group_name] = products
 

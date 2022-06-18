@@ -1,8 +1,7 @@
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import List, Optional
 
 from pydantic import BaseModel, validator
-
-from typing import List
 
 from app.models import PriceTrend, Product
 
@@ -10,7 +9,7 @@ from app.models import PriceTrend, Product
 class PydanticDictIsoFormat(BaseModel):
     def dict(self, **kwargs):
         output = super().dict(**kwargs)
-        for k,v in output.items():
+        for k, v in output.items():
             if isinstance(v, date):
                 output[k] = v.isoformat()
         return output
@@ -52,15 +51,15 @@ class PriceTrendResponseModel(PydanticDictIsoFormat):
 
     @staticmethod
     def from_db_price_trend(trend: PriceTrend) -> "PriceTrendResponseModel":
-        return PriceTrendResponseModel(date = trend.date, price=trend.price)
+        return PriceTrendResponseModel(date=trend.date, price=trend.price)
 
 
 class ProductResponseModel(PydanticDictIsoFormat):
-    current_price: float
+    current_price: Optional[float]
     id: int
     price_modifier: str
     price_trends: List[PriceTrendResponseModel]
-    price_updated_date: date
+    price_updated_date: Optional[date]
     store: str
     url: str
 
@@ -70,10 +69,13 @@ class ProductResponseModel(PydanticDictIsoFormat):
             current_price=product.current_price,
             id=product.id,
             price_modifier=product.price_modifier,
-            price_trends=[PriceTrendResponseModel.from_db_price_trend(pt) for pt in product.price_trends],
+            price_trends=[
+                PriceTrendResponseModel.from_db_price_trend(pt)
+                for pt in product.price_trends
+            ],
             price_updated_date=product.price_updated_date,
-            store = product.store,
-            url = product.url
+            store=product.store,
+            url=product.url,
         )
 
 

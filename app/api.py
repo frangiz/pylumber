@@ -6,7 +6,12 @@ import app.services as services
 from app import db, price_fetcher
 from app.auth import token_required
 from app.models import PriceSnapshot, PriceTrend, Product
-from app.resources import PriceCreateModel, ProductCreateModel, ProductResponseModel, price_modifiers
+from app.resources import (
+    PriceCreateModel,
+    ProductCreateModel,
+    ProductResponseModel,
+    price_modifiers,
+)
 
 bp = Blueprint("api", __name__)
 
