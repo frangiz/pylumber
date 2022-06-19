@@ -15,7 +15,7 @@ def get_products() -> List[ProductGroupResponseModel]:
 
     res = [
         ProductGroupResponseModel(
-            group_name=k, products=[ProductResponseModel.from_db_product(e) for e in g]
+            group_name=k, products=[ProductResponseModel.from_orm(e) for e in g]
         )
         for k, g in groupby(entries, attrgetter("group_name"))
     ]

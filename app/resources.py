@@ -3,8 +3,6 @@ from typing import List, Optional
 
 from pydantic import BaseModel, validator
 
-from app.models import PriceTrend, Product
-
 
 class PydanticDictIsoFormat(BaseModel):
     def dict(self, **kwargs):
@@ -49,9 +47,8 @@ class PriceTrendResponseModel(PydanticDictIsoFormat):
     date: date
     price: float
 
-    @staticmethod
-    def from_db_price_trend(trend: PriceTrend) -> "PriceTrendResponseModel":
-        return PriceTrendResponseModel(date=trend.date, price=trend.price)
+    class Config:
+        orm_mode = True
 
 
 class ProductResponseModel(PydanticDictIsoFormat):
@@ -63,20 +60,8 @@ class ProductResponseModel(PydanticDictIsoFormat):
     store: str
     url: str
 
-    @staticmethod
-    def from_db_product(product: Product) -> "ProductResponseModel":
-        return ProductResponseModel(
-            current_price=product.current_price,
-            id=product.id,
-            price_modifier=product.price_modifier,
-            price_trends=[
-                PriceTrendResponseModel.from_db_price_trend(pt)
-                for pt in product.price_trends
-            ],
-            price_updated_date=product.price_updated_date,
-            store=product.store,
-            url=product.url,
-        )
+    class Config:
+        orm_mode = True
 
 
 class ProductGroupResponseModel(BaseModel):
