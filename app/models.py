@@ -1,23 +1,7 @@
-import sqlalchemy.orm
 from sqlalchemy import ForeignKey
-from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import relationship
 
 from app import db
-
-
-def to_dict(self):
-    return {c.name: getattr(self, c.name, None) for c in self.__table__.columns}
-
-
-def to_dict_except(self, exclusions):
-    all_attrs = {c.name: getattr(self, c.name, None) for c in self.__table__.columns}
-    relationship_names = [n for n, _ in inspect(self.__class__).relationships.items()]
-    for rel in relationship_names:
-        val = getattr(self, rel, None)
-        if type(val) == sqlalchemy.orm.collections.InstrumentedList:
-            all_attrs[rel] = [v.to_dict() for v in val]
-    return {k: v for k, v in all_attrs.items() if k not in exclusions}
 
 
 class Product(db.Model):  # type: ignore
@@ -31,10 +15,6 @@ class Product(db.Model):  # type: ignore
     price_trends = relationship("PriceTrend", lazy="joined")
 
 
-Product.to_dict = to_dict
-Product.to_dict_except = to_dict_except
-
-
 class PriceSnapshot(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, nullable=False)
@@ -42,16 +22,8 @@ class PriceSnapshot(db.Model):  # type: ignore
     price = db.Column(db.Float, nullable=False)
 
 
-PriceSnapshot.to_dict = to_dict
-PriceSnapshot.to_dict_except = to_dict_except
-
-
 class PriceTrend(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, ForeignKey("product.id"), nullable=False)
     date = db.Column(db.String(16), nullable=False)
     price = db.Column(db.Float, nullable=False)
-
-
-PriceTrend.to_dict = to_dict
-PriceTrend.to_dict_except = to_dict_except
