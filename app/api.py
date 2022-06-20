@@ -19,7 +19,7 @@ bp = Blueprint("api", __name__)
 @bp.route("/products/<int:id>/prices", methods=["POST"])
 @token_required
 @validate()
-def create_priced_product(id, body: PriceCreateModel):
+def create_price(id, body: PriceCreateModel):
     product = Product.query.filter_by(id=id).first()
     if not product:
         current_app.logger.warning(
@@ -53,7 +53,7 @@ def create_priced_product(id, body: PriceCreateModel):
     db.session.add(product)
     db.session.commit()
 
-    return jsonify(ProductResponseModel.from_db_product(product).dict()), 201
+    return ProductResponseModel.from_orm(product).json(), 201
 
 
 @bp.route("/products", methods=["GET"])
@@ -82,4 +82,4 @@ def create_product(body: ProductCreateModel):
     db.session.add(p)
     db.session.commit()
 
-    return jsonify({"msg": "ok"}), 201
+    return ProductResponseModel.from_orm(p).json(), 201

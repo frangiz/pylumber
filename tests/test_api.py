@@ -4,7 +4,7 @@ import pytest
 from flask import url_for
 
 from app import create_app, db
-from app.resources import ProductCreateModel
+from app.resources import PriceCreateModel, ProductCreateModel, ProductResponseModel
 from config import Config, basedir
 
 
@@ -41,6 +41,22 @@ def teardown_function(function):
     db.drop_all()
 
 
+def add_basic_product(client, mocker) -> ProductResponseModel:
+    mocker.patch("app.price_fetcher.get_price", return_value=42.0)
+
+    product = ProductCreateModel(
+        group_name="my_group", store="the_store", url="some_url", price_modifier="none"
+    )
+
+    resp = client.post(
+        url_for("api.create_product"),
+        json=product.dict(),
+        headers={"access-token": AUTH_TEST_TOKEN},
+    )
+    assert resp.status_code == 201
+    return ProductResponseModel.parse_raw(resp.text)
+
+
 def test_get_products_with_no_products_returns_empty_result(client):
     res = client.get(url_for("api.get_products"))
     assert res.json == []
@@ -48,17 +64,7 @@ def test_get_products_with_no_products_returns_empty_result(client):
 
 
 def test_can_crate_basic_product(client, mocker):
-    mocker.patch("app.price_fetcher.get_price", return_value=42.0)
-
-    product = ProductCreateModel(
-        group_name="my_group", store="the_store", url="some_url", price_modifier="none"
-    )
-    res = client.post(
-        url_for("api.create_product"),
-        json=product.dict(),
-        headers={"access-token": AUTH_TEST_TOKEN},
-    )
-    assert res.status_code == 201
+    add_basic_product(client, mocker)
 
     res = client.get(url_for("api.get_products"))
     assert res.json == [
@@ -78,3 +84,21 @@ def test_can_crate_basic_product(client, mocker):
         }
     ]
     assert res.status_code == 200
+
+
+def test_can_add_first_price_snapshot_basic_product(client, mocker):
+    product = add_basic_product(client, mocker)
+
+    new_price = PriceCreateModel(price=42.0, date="2022-06-20")
+    resp = ProductResponseModel.parse_raw(
+        client.post(
+            url_for("api.create_price", id=product.id),
+            json=new_price.dict(),
+            headers={"access-token": AUTH_TEST_TOKEN},
+        ).text
+    )
+
+    assert resp.current_price == 42.0
+    assert resp.price_updated_date.isoformat() == "2022-06-20"
+    assert resp.price_trends[0].price == 42.0
+    assert resp.price_trends[0].date.isoformat() == "2022-06-20"
