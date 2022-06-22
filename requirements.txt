@@ -9,7 +9,7 @@ Flask-Pydantic
 flask-sqlalchemy
 
 gunicorn
-sentry-sdk[flask]
+sentry-sdk[flask]==1.6.0
 python-dotenv
 pydantic
 
