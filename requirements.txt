@@ -1,21 +1,21 @@
-requests
-beautifulsoup4
-natsort
-python-dateutil
+requests==2.27.1
+beautifulsoup4==4.11.1
+natsort==8.1.0
+python-dateutil==2.8.2
 
-flask
-flask-migrate
-Flask-Pydantic
-flask-sqlalchemy
+flask==2.1.2
+flask-migrate==3.1.0
+Flask-Pydantic==0.9.0
+flask-sqlalchemy==2.5.1
 
-gunicorn
+gunicorn==20.1.0
 sentry-sdk[flask]==1.6.0
-python-dotenv
-pydantic
+python-dotenv==0.20.0
+pydantic==1.9.1
 
-pytest
-pytest-cov
-pytest-flask
-pytest-mock
+pytest==7.1.2
+pytest-cov==3.0.0
+pytest-flask==1.2.0
+pytest-mock==3.7.0
 
-pre-commit
+pre-commit==2.19.0
