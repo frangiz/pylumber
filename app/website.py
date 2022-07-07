@@ -14,11 +14,13 @@ def float_to_kr_str(value: float) -> str:
 
 def get_last_price_change(prices):
     if len(prices) == 0:
-        return {"date": None, "price": 0.0, "change": "---"}
+        return {"date": None, "price": 0.0, "change": None, "change_str": "---", "change_percent": 0.0}
     price_change = {
         "date": prices[0].date,
         "price": prices[0].price,
-        "change": "---",
+        "change": None,
+        "change_str": "---",
+        "change_percent": 0.0
     }
     if len(prices) == 1:
         return price_change
@@ -28,18 +30,21 @@ def get_last_price_change(prices):
         if current_snapshot.price != prev_snapshot.price:
             price_change["date"] = current_snapshot.date
             price_change["price"] = current_snapshot.price
-            price_change["change"] = float_to_kr_str(
+            price_change["change"] = current_snapshot.price - prev_snapshot.price
+            price_change["change_str"] = float_to_kr_str(
                 current_snapshot.price - prev_snapshot.price
             )
+            change_percent = current_snapshot.price / prev_snapshot.price
+            price_change["change_percent"] = (change_percent if change_percent < 0 else change_percent - 1) * 100
             return price_change
     return price_change
 
 
-def get_price_change_color(date: date, price_change: str) -> str:
-    if date is None or price_change == "---":
+def get_price_change_color(date: date, price_change: float) -> str:
+    if date is None or price_change is None:
         return "black"
     if (datetime.utcnow() - datetime.combine(date, time())).days <= 5:
-        return "red" if float(price_change.replace("kr", "")) > 0.0 else "green"
+        return "red" if price_change > 0.0 else "green"
     return "black"
 
 
@@ -59,7 +64,8 @@ def index():
                 "url": product.url,
                 "date": last_price_change["date"],
                 "price": float_to_kr_str(last_price_change["price"])[1:],
-                "price_changed": last_price_change["change"],
+                "price_changed": last_price_change["change_str"],
+                "price_changed_percent": last_price_change["change_percent"],
                 "text_color": get_price_change_color(
                     last_price_change["date"], last_price_change["change"]
                 ),
