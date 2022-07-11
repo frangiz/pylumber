@@ -14,13 +14,19 @@ def float_to_kr_str(value: float) -> str:
 
 def get_last_price_change(prices):
     if len(prices) == 0:
-        return {"date": None, "price": 0.0, "change": None, "change_str": "---", "change_percent": 0.0}
+        return {
+            "date": None,
+            "price": 0.0,
+            "change": None,
+            "change_str": "---",
+            "change_percent": 0.0,
+        }
     price_change = {
         "date": prices[0].date,
         "price": prices[0].price,
         "change": None,
         "change_str": "---",
-        "change_percent": 0.0
+        "change_percent": 0.0,
     }
     if len(prices) == 1:
         return price_change
@@ -35,7 +41,9 @@ def get_last_price_change(prices):
                 current_snapshot.price - prev_snapshot.price
             )
             change_percent = current_snapshot.price / prev_snapshot.price
-            price_change["change_percent"] = (change_percent if change_percent < 0 else change_percent - 1) * 100
+            price_change["change_percent"] = (
+                change_percent if change_percent < 0 else change_percent - 1
+            ) * 100
             return price_change
     return price_change
 
