@@ -11,7 +11,7 @@ from typing import List
 
 import requests  # type: ignore
 import sentry_sdk
-from pydantic import BaseSettings
+from pydantic import BaseModel, BaseSettings
 
 from app.resources import PriceCreateModel
 from common.price_fetcher import PriceFetcher
@@ -32,6 +32,16 @@ class Settings(BaseSettings):
     flask_env: str = "development"
     sentry_sdk_dsn: str = ""
     smtp: SMTPSettings = SMTPSettings()
+
+
+class Product(BaseModel):
+    id: int
+    store: str
+    url: str
+
+
+def now_isoformat() -> str:
+    return datetime.now(timezone.utc).date().isoformat()
 
 
 def notify_result(failed_urls: List[str], settings: SMTPSettings) -> None:
@@ -71,41 +81,40 @@ def create_email(monday: bool, failed_urls: List[str]) -> str:
     )
 
 
-def get_products():
+def get_products() -> List[Product]:
     products = []
     resp = requests.get(url="http://localhost:5000/api/products")
     for group in resp.json():
-        for product in group["products"]:
-            if (
-                product["price_updated_date"]
-                != datetime.now(timezone.utc).date().isoformat()
-            ):
-                products.append((product["id"], product["store"], product["url"]))
+        for prod in group["products"]:
+            if prod["price_updated_date"] != now_isoformat():
+                products.append(Product(**prod))
     return products
+
+
+def upload_price(access_token: str, product: Product, price: float):
+    price_snapshot = PriceCreateModel(price=price, date=now_isoformat())
+    logger.debug(
+        f"product id: {product.id}, store: {product.store}, price data: {price_snapshot.dict()}"  # noqa: E501
+    )
+    requests.post(
+        url=f"http://localhost:5000/api/products/{product.id}/prices",
+        json=price_snapshot.dict(),
+        headers={"access_token": access_token},
+    )
 
 
 def collect(access_token, products, smtp_settings):
     failed_urls = []
     price_fetcher = PriceFetcher()
-    for processed_products, (id, store, url) in enumerate(products, start=1):
+    for processed_products, product in enumerate(products, start=1):
         try:
-            price = price_fetcher.get_price(store, url)
-            price_snapshot = PriceCreateModel(
-                price=price, date=datetime.now(timezone.utc).date().isoformat()
-            )
-            logger.debug(
-                f"product id: {id}, store: {store}, price data: {price_snapshot.dict()}"
-            )
-            requests.post(
-                url=f"http://localhost:5000/api/products/{id}/prices",
-                json=price_snapshot.dict(),
-                headers={"access_token": access_token},
-            )
+            price = price_fetcher.get_price(product.store, product.url)
+            upload_price(access_token, product, price)
         except Exception as e:
-            logger.exception(f"Got exception {e} for url {url}")
-            print(url)
+            logger.exception(f"Got exception {e} for url {product.url}")
+            print(product.url)
             traceback.print_exc()
-            failed_urls.append(url)
+            failed_urls.append(product.url)
         print(f"Processed {processed_products}/{len(products)}")
 
     notify_result(failed_urls, smtp_settings)
@@ -147,5 +156,5 @@ if __name__ == "__main__":
 
     products = get_products()
     if args.stores:
-        products = list(filter(lambda p: p[1] in (args.stores), products))
+        products = list(filter(lambda p: p.store in (args.stores), products))
     collect(access_token, products, settings.smtp)
